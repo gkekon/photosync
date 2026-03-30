@@ -6,6 +6,7 @@
 <title>PhotoSync</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root {
   --bg: #0d1117;
@@ -694,35 +695,61 @@ function load() {
 
 // ===== GOOGLE AUTH =====
 const CLIENT_ID = '229545255239-rha9kn9rkf0l6c5uioo4rbg4n8aig2eq.apps.googleusercontent.com'; // User fills this in
-const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly profile email';
+const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
+
+let tokenClient = null;
+
+function initGoogleAuth() {
+  if (!CLIENT_ID || !window.google) return;
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: async (response) => {
+      if (response.error) {
+        showToast('Google sign-in error: ' + response.error);
+        return;
+      }
+      state.googleToken = response.access_token;
+      localStorage.setItem('ps_gtoken', response.access_token);
+      await fetchGoogleProfile();
+      showApp();
+    },
+  });
+}
 
 function signIn() {
   if (!CLIENT_ID) {
     demoMode();
     return;
   }
-  // Build exact redirect URI matching what's in Google Cloud Console
-  const redirectUri = location.origin + location.pathname;
-  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(SCOPES)}&prompt=consent&include_granted_scopes=true`;
-  location.href = url;
+  // Try stored token first
+  const stored = localStorage.getItem('ps_gtoken');
+  if (stored) {
+    state.googleToken = stored;
+    fetchGoogleProfile().then(() => {
+      if (state.user) { showApp(); return; }
+      requestNewToken();
+    }).catch(() => requestNewToken());
+    return;
+  }
+  requestNewToken();
+}
+
+function requestNewToken() {
+  if (!tokenClient) {
+    // GIS not loaded yet, wait and retry
+    setTimeout(() => {
+      initGoogleAuth();
+      if (tokenClient) tokenClient.requestAccessToken({ prompt: 'consent' });
+      else showToast('Google Sign-In not ready. Please try again in a moment.');
+    }, 1000);
+    return;
+  }
+  tokenClient.requestAccessToken({ prompt: 'consent' });
 }
 
 function handleOAuthCallback() {
-  // Check URL hash for token (implicit flow returns it in the hash)
-  const hash = location.hash;
-  if (hash && hash.includes('access_token')) {
-    const params = new URLSearchParams(hash.slice(1));
-    const token = params.get('access_token');
-    if (token) {
-      state.googleToken = token;
-      // Store token so it survives the page reload
-      localStorage.setItem('ps_gtoken', token);
-      // Clean the URL
-      history.replaceState(null, '', location.pathname);
-      return true;
-    }
-  }
-  // Check if we have a stored token
+  // GIS handles redirect — just check for stored token
   const stored = localStorage.getItem('ps_gtoken');
   if (stored) {
     state.googleToken = stored;
@@ -730,6 +757,11 @@ function handleOAuthCallback() {
   }
   return false;
 }
+
+// Init GIS once script loads
+window.addEventListener('load', () => {
+  setTimeout(initGoogleAuth, 500);
+});
 
 async function fetchGoogleProfile() {
   if (!state.googleToken) return;
@@ -1363,6 +1395,9 @@ function exportCSV(type) {
 
 // ===== SIGN OUT =====
 function signOut() {
+  if (state.googleToken && window.google) {
+    google.accounts.oauth2.revoke(state.googleToken, () => {});
+  }
   state.user = null; state.googleToken = null;
   localStorage.removeItem('ps_user');
   localStorage.removeItem('ps_gtoken');
@@ -1383,17 +1418,17 @@ function showToast(msg) {
 // ===== INIT =====
 load();
 const oauthResult = handleOAuthCallback();
-if (oauthResult === true) {
-  fetchGoogleProfile().then(showApp);
-} else if (oauthResult === 'stored') {
+if (oauthResult === 'stored') {
   fetchGoogleProfile().then(() => {
     if (state.user) showApp();
     else {
       localStorage.removeItem('ps_gtoken');
+      state.googleToken = null;
       document.getElementById('loginScreen').style.display = 'flex';
     }
   }).catch(() => {
     localStorage.removeItem('ps_gtoken');
+    state.googleToken = null;
     document.getElementById('loginScreen').style.display = 'flex';
   });
 } else if (state.user) {
