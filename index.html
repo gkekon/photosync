@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhotoSync</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0d1117;
+  --bg2: #161b22;
+  --bg3: #1c2333;
+  --bg4: #21262d;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --text3: #6e7681;
+  --accent: #2eaadc;
+  --accent2: #1a8fc2;
+  --green: #2ea043;
+  --red: #e74c3c;
+  --orange: #f0883e;
+  --yellow: #d29922;
+  --card-radius: 12px;
+  --shadow: 0 2px 16px rgba(0,0,0,0.4);
+}
+.theme-amethyst { --accent:#a855f7; --accent2:#9333ea; --bg:#0e0b1a; --bg2:#130f26; --bg3:#1a1535; --bg4:#221d40; }
+.theme-emerald  { --accent:#10b981; --accent2:#059669; --bg:#071512; --bg3:#0f2920; --bg4:#163829; }
+.theme-cerulean { --bg:#f0f4f8; --bg2:#e2e8f0; --bg3:#dde6ef; --bg4:#d4dde8; --border:#b0bec5; --text:#1a2332; --text2:#4a5568; --text3:#718096; }
+.theme-lavender { --bg:#f5f0ff; --bg2:#ede7fd; --bg3:#e4dafa; --bg4:#d9d0f6; --border:#c4b5f4; --text:#2d1b69; --text2:#553c9a; --text3:#7c5cbc; --accent:#7c3aed; --accent2:#6d28d9; }
+.theme-sage     { --bg:#f0f5f0; --bg2:#e2ede2; --bg3:#d4e5d4; --bg4:#c6ddc6; --border:#8db48d; --text:#1a2e1a; --text2:#3d6b3d; --text3:#5c8c5c; --accent:#16a34a; --accent2:#15803d; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; transition: background 0.3s, color 0.3s; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* NAV */
+nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 56px;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+}
+.nav-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; }
+.logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.nav-actions { display: flex; align-items: center; gap: 8px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg3); color: var(--text); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+.btn:hover { background: var(--bg4); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent2); border-color: var(--accent2); }
+.btn-icon { padding: 7px; width: 34px; height: 34px; justify-content: center; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #fff; cursor: pointer; }
+.user-menu-trigger { display: flex; align-items: center; gap: 4px; cursor: pointer; position: relative; }
+.chevron { font-size: 10px; color: var(--text2); }
+
+/* MAIN */
+main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+
+/* STAT CARDS */
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+@media (max-width: 900px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .stat-grid { grid-template-columns: 1fr; } }
+.stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 16px 20px; }
+.stat-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.stat-value { font-size: 22px; font-weight: 700; color: var(--text); }
+.stat-sub { font-size: 12px; color: var(--text3); margin-top: 4px; }
+.next-event-name { font-size: 18px; font-weight: 700; }
+.next-event-date { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+/* PACKAGES BAR */
+.packages-bar { display: flex; align-items: center; gap: 8px; overflow-x: auto; padding: 10px 0; margin-bottom: 14px; flex-wrap: nowrap; }
+.pkg-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg2); font-size: 12px; color: var(--text); white-space: nowrap; cursor: pointer; transition: all 0.15s; }
+.pkg-chip:hover { border-color: var(--accent); }
+.pkg-label { color: var(--text2); font-size: 12px; white-space: nowrap; }
+.add-pkg-btn { display: inline-flex; align-items: center; gap: 4px; padding: 5px 12px; border-radius: 20px; border: 1px dashed var(--border); background: transparent; color: var(--text2); font-size: 12px; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+.add-pkg-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* TABS */
+.tabs { display: flex; gap: 4px; margin-bottom: 16px; background: var(--bg3); border-radius: 10px; padding: 4px; width: fit-content; }
+.tab { padding: 7px 18px; border-radius: 7px; border: none; background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px; transition: all 0.15s; }
+.tab.active { background: var(--bg); color: var(--text); border: 1px solid var(--border); box-shadow: var(--shadow); }
+
+/* TABLE PANEL */
+.table-panel { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; }
+.table-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border); }
+.table-title { font-size: 15px; font-weight: 600; }
+.table-badges { display: flex; gap: 6px; }
+.badge { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+.badge-default { background: var(--bg3); color: var(--text2); }
+.badge-orange { background: rgba(240,136,62,0.15); color: var(--orange); border: 1px solid rgba(240,136,62,0.3); }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 900px; }
+thead th { padding: 10px 12px; text-align: left; font-size: 12px; font-weight: 500; color: var(--text2); border-bottom: 1px solid var(--border); white-space: nowrap; user-select: none; cursor: pointer; }
+thead th:hover { color: var(--text); }
+tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; cursor: pointer; }
+tbody tr:hover { background: var(--bg3); }
+tbody tr:last-child { border-bottom: none; }
+td { padding: 10px 12px; font-size: 13px; white-space: nowrap; }
+.td-date { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text2); }
+.td-name { font-weight: 500; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
+.td-income { font-weight: 600; color: var(--accent); font-family: 'DM Mono', monospace; }
+.td-pkg { font-size: 12px; color: var(--text2); max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
+.status-pill { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.status-booked { background: rgba(46,160,67,0.15); color: var(--green); border: 1px solid rgba(46,160,67,0.3); }
+.status-completed { background: rgba(46,170,220,0.15); color: var(--accent); border: 1px solid rgba(46,170,220,0.3); }
+.status-unbooked { background: rgba(240,136,62,0.15); color: var(--orange); border: 1px solid rgba(240,136,62,0.3); }
+.check-icon { font-size: 14px; }
+.check-yes { color: var(--green); }
+.check-no { color: var(--red); }
+
+/* ANALYTICS */
+.analytics-panel { display: none; flex-direction: column; gap: 12px; }
+.analytics-panel.active { display: flex; }
+.analytics-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+@media (max-width:900px) { .analytics-stats { grid-template-columns: repeat(2,1fr); } }
+.a-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 16px 20px; }
+.a-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; }
+.a-value { font-size: 20px; font-weight: 700; }
+.a-value.green { color: var(--green); }
+.chart-tabs { display: flex; gap: 0; background: var(--bg3); border-radius: 10px; padding: 4px; width: 100%; }
+.chart-tab { flex: 1; padding: 7px; border-radius: 7px; border: none; background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.15s; }
+.chart-tab.active { background: var(--bg); color: var(--text); border: 1px solid var(--border); box-shadow: var(--shadow); }
+.chart-container { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 20px; min-height: 320px; display: flex; flex-direction: column; }
+.chart-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+.chart-canvas-wrap { flex: 1; position: relative; }
+
+/* MODAL OVERLAY */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 16px; }
+.overlay.active { display: flex; }
+.modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.5); animation: modalIn 0.2s ease; }
+@keyframes modalIn { from { opacity:0; transform: translateY(16px) scale(0.97); } to { opacity:1; transform: none; } }
+.modal-head { display: flex; align-items: flex-start; justify-content: space-between; padding: 20px 20px 0; }
+.modal-title { font-size: 18px; font-weight: 700; }
+.modal-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+.modal-close { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 18px; padding: 2px; }
+.modal-close:hover { color: var(--text); }
+.modal-body { padding: 16px 20px 20px; display: flex; flex-direction: column; gap: 14px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-size: 12px; font-weight: 500; color: var(--text2); }
+.form-control { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; width: 100%; transition: border-color 0.15s; }
+.form-control:focus { border-color: var(--accent); }
+select.form-control { cursor: pointer; }
+textarea.form-control { resize: vertical; min-height: 70px; }
+.form-toggle { display: flex; align-items: center; justify-content: space-between; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.toggle-label { font-size: 13px; font-weight: 500; }
+.toggle { position: relative; width: 40px; height: 22px; cursor: pointer; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; inset: 0; background: var(--bg4); border-radius: 11px; transition: 0.2s; border: 1px solid var(--border); }
+.toggle-slider::before { content:''; position:absolute; width:16px;height:16px;left:2px;top:2px;background:#fff;border-radius:50%;transition:0.2s; }
+.toggle input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+.income-preview { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
+.income-preview-label { font-size: 13px; color: var(--text2); }
+.income-preview-value { font-size: 15px; font-weight: 700; color: var(--accent); font-family: 'DM Mono', monospace; }
+.modal-foot { display: flex; gap: 10px; padding: 0 20px 20px; }
+.modal-foot .btn { flex: 1; justify-content: center; padding: 10px; }
+
+/* SETTINGS MODAL */
+.settings-modal { max-width: 480px; }
+.settings-section { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+.theme-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.theme-option { border: 2px solid var(--border); border-radius: 10px; padding: 10px; cursor: pointer; transition: all 0.15s; text-align: center; }
+.theme-option.active { border-color: var(--accent); }
+.theme-option:hover { border-color: var(--text2); }
+.theme-preview { height: 32px; border-radius: 6px; margin-bottom: 6px; }
+.theme-name { font-size: 11px; font-weight: 500; }
+.sync-info { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+.sync-info-title { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+.sync-bullets { list-style: disc; padding-left: 16px; color: var(--text2); font-size: 12px; line-height: 1.8; }
+
+/* DROPDOWN MENU */
+.dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; min-width: 220px; box-shadow: var(--shadow); z-index: 300; overflow: hidden; }
+.dropdown-user { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.dropdown-user-name { font-size: 13px; font-weight: 600; }
+.dropdown-user-email { font-size: 11px; color: var(--text2); }
+.dropdown-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; color: var(--text); cursor: pointer; font-size: 13px; transition: background 0.1s; border: none; background: none; width: 100%; text-align: left; }
+.dropdown-item:hover { background: var(--bg3); }
+.dropdown-item.danger { color: var(--red); }
+.dropdown-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+/* GOOGLE CAL MODAL */
+.cal-status { display: flex; align-items: center; justify-content: space-between; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+.cal-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+.cal-status-left { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; }
+.active-badge { padding: 2px 10px; border-radius: 12px; font-size: 11px; border: 1px solid var(--border); color: var(--text2); }
+
+/* PKG MANAGER */
+.pkg-list { display: flex; flex-direction: column; gap: 8px; }
+.pkg-row { display: flex; align-items: center; gap: 8px; }
+.pkg-row .form-control { flex: 1; }
+.pkg-delete { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--text2); cursor: pointer; padding: 6px 8px; }
+.pkg-delete:hover { color: var(--red); border-color: var(--red); }
+
+/* LOGIN SCREEN */
+.login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; gap: 24px; text-align: center; padding: 24px; }
+.login-logo { width: 64px; height: 64px; background: var(--accent); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto; }
+.login-title { font-size: 28px; font-weight: 700; }
+.login-sub { color: var(--text2); font-size: 15px; max-width: 360px; line-height: 1.5; }
+.google-btn { display: flex; align-items: center; gap: 10px; padding: 12px 24px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg2); color: var(--text); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; transition: all 0.15s; }
+.google-btn:hover { background: var(--bg3); border-color: var(--accent); }
+.google-icon { width: 20px; height: 20px; }
+.login-features { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; max-width: 400px; margin-top: 8px; }
+.login-feature { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; text-align: left; font-size: 12px; color: var(--text2); }
+.login-feature strong { display: block; color: var(--text); font-size: 13px; margin-bottom: 2px; }
+
+/* DETAIL MODAL */
+.detail-section { border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 2px; }
+.detail-section:last-child { border-bottom: none; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.detail-item { }
+.detail-item-label { font-size: 11px; color: var(--text2); margin-bottom: 2px; }
+.detail-item-value { font-size: 13px; font-weight: 500; }
+
+/* CUSTOM BG */
+.custom-color-wrap { display: flex; align-items: center; gap: 10px; }
+.custom-color-wrap input[type=color] { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border); background: none; cursor: pointer; padding: 2px; }
+
+/* RESPONSIVE NAV */
+@media (max-width: 600px) {
+  nav { padding: 0 12px; }
+  main { padding: 12px; }
+  .btn span { display: none; }
+  .nav-logo span { display: none; }
+}
+
+/* TOAST */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 10px 20px; font-size: 13px; z-index: 500; transition: transform 0.3s ease; box-shadow: var(--shadow); white-space: nowrap; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* SPIN */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 1s linear infinite; display: inline-block; }
+
+/* SORT ARROW */
+.sort-arrow { font-size: 10px; margin-left: 2px; opacity: 0.5; }
+.sort-arrow.active { opacity: 1; color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-logo">📷</div>
+  <div>
+    <div class="login-title">PhotoSync</div>
+    <div class="login-sub" style="margin-top:8px;">Your professional wedding & event booking dashboard. Sync from Google Calendar, track income, and manage packages.</div>
+  </div>
+  <button class="google-btn" onclick="signIn()">
+    <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+    Continue with Google
+  </button>
+  <div style="color:var(--text3);font-size:12px;">or</div>
+  <button class="btn" onclick="demoMode()">Continue in Demo Mode (no Google)</button>
+  <div class="login-features">
+    <div class="login-feature"><strong>📅 Google Calendar Sync</strong>One-way import of your events</div>
+    <div class="login-feature"><strong>💰 Income Tracking</strong>Monthly & yearly calculations</div>
+    <div class="login-feature"><strong>📦 Package Management</strong>Silver, Gold, custom packages</div>
+    <div class="login-feature"><strong>📊 Analytics</strong>Charts, status breakdown & more</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;">
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="logo-icon">📷</div>
+    <span>PhotoSync</span>
+  </div>
+  <div class="nav-actions">
+    <button class="btn" onclick="syncCalendar()" id="syncBtn">
+      <span id="syncIcon">🔄</span>
+      <span>Sync Calendar</span>
+    </button>
+    <button class="btn btn-primary" onclick="openAddEvent()">
+      <span>+</span>
+      <span>Add Event</span>
+    </button>
+    <button class="btn btn-icon" onclick="openSettings()" title="Settings">⚙️</button>
+    <div class="user-menu-trigger" onclick="toggleUserMenu()" style="position:relative;">
+      <div class="avatar" id="userAvatar">K</div>
+      <div class="chevron">▼</div>
+      <div class="dropdown" id="userDropdown" style="display:none;" onclick="event.stopPropagation()">
+        <div class="dropdown-user">
+          <div class="dropdown-user-name" id="dropdownName">User</div>
+          <div class="dropdown-user-email" id="dropdownEmail">user@gmail.com</div>
+        </div>
+        <button class="dropdown-item" onclick="openSettings();toggleUserMenu()">⚙️ Settings</button>
+        <button class="dropdown-item" onclick="openCalSettings();toggleUserMenu()">📅 Calendar Settings</button>
+        <button class="dropdown-item" onclick="openPkgManager();toggleUserMenu()">📦 Manage Packages</button>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item" onclick="exportCSV('events');toggleUserMenu()">📋 Export Events (CSV)</button>
+        <button class="dropdown-item" onclick="exportCSV('summary');toggleUserMenu()">⬇️ Export Summary (CSV)</button>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item danger" onclick="signOut()">↪ Sign Out</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main>
+  <!-- STAT CARDS -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label">📈 Yearly Income</div>
+      <div class="stat-value" id="statYearly">0,00 €</div>
+      <div class="stat-sub" id="statYearlySub">0 booked events</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">€ Monthly Income</div>
+      <div class="stat-value" id="statMonthly">0,00 €</div>
+      <div class="stat-sub" id="statMonthlySub">This month</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">⏰ Pending Deposits</div>
+      <div class="stat-value" id="statDeposits">0</div>
+      <div class="stat-sub">Events without deposit</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">📅 Next Event</div>
+      <div class="next-event-name" id="statNextName">—</div>
+      <div class="next-event-date" id="statNextDate">No upcoming events</div>
+    </div>
+  </div>
+
+  <!-- PACKAGES BAR -->
+  <div class="packages-bar" id="packagesBar">
+    <span class="pkg-label">Packages:</span>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('events')" id="tabEvents">🗓 Events</button>
+    <button class="tab" onclick="switchTab('analytics')" id="tabAnalytics">📊 Analytics</button>
+  </div>
+
+  <!-- EVENTS TABLE -->
+  <div id="eventsPanel">
+    <div class="table-panel">
+      <div class="table-header">
+        <div class="table-title">Events &amp; Bookings</div>
+        <div class="table-badges">
+          <span class="badge badge-default" id="totalBadge">0 events</span>
+          <span class="badge badge-orange" id="unbookedBadge" style="display:none;"></span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="eventsTable">
+          <thead>
+            <tr>
+              <th onclick="sortTable('date')">Date <span class="sort-arrow" id="sort-date">↕</span></th>
+              <th onclick="sortTable('name')">Name <span class="sort-arrow" id="sort-name">↕</span></th>
+              <th>📷</th>
+              <th onclick="sortTable('package')">Package <span class="sort-arrow" id="sort-package">↕</span></th>
+              <th onclick="sortTable('location')">Location <span class="sort-arrow" id="sort-location">↕</span></th>
+              <th onclick="sortTable('deposit')">Deposit <span class="sort-arrow" id="sort-deposit">↕</span></th>
+              <th onclick="sortTable('offerPrice')">Offer Price <span class="sort-arrow" id="sort-offerPrice">↕</span></th>
+              <th onclick="sortTable('clearIncome')">Income <span class="sort-arrow" id="sort-clearIncome">↕</span></th>
+              <th onclick="sortTable('status')">Status <span class="sort-arrow" id="sort-status">↕</span></th>
+            </tr>
+          </thead>
+          <tbody id="eventsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANALYTICS -->
+  <div id="analyticsPanel" class="analytics-panel">
+    <div class="analytics-stats">
+      <div class="a-card"><div class="a-label">Total Revenue</div><div class="a-value" id="aRevenue" style="color:var(--accent)">0 €</div></div>
+      <div class="a-card"><div class="a-label">Total Costs</div><div class="a-value" id="aCosts">0 €</div></div>
+      <div class="a-card"><div class="a-label">Profit Margin</div><div class="a-value green" id="aMargin">0%</div></div>
+      <div class="a-card"><div class="a-label">Deposits Received</div><div class="a-value" id="aDeposits">0 €</div></div>
+    </div>
+    <div class="chart-tabs">
+      <button class="chart-tab active" onclick="switchChart('monthly')" id="ctMonthly">📊 Monthly Income</button>
+      <button class="chart-tab" onclick="switchChart('status')" id="ctStatus">⏰ Event Status</button>
+      <button class="chart-tab" onclick="switchChart('packages')" id="ctPackages">📈 Packages</button>
+    </div>
+    <div class="chart-container">
+      <div class="chart-title" id="chartTitle">Monthly Income (2026)</div>
+      <div class="chart-canvas-wrap">
+        <canvas id="mainChart"></canvas>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- ADD/EDIT EVENT MODAL -->
+<div class="overlay" id="eventModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="modalTitle">New Event</div>
+        <div class="modal-sub" id="modalSub">Add a new wedding or event booking</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('eventModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" class="form-control" id="fDate">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select class="form-control" id="fStatus">
+            <option value="Unbooked">Unbooked</option>
+            <option value="Booked">Booked</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Event Name</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="text" class="form-control" id="fName" placeholder="Wedding of John & Jane" style="flex:1;">
+          <div class="form-toggle" style="padding:6px 10px;gap:6px;flex-shrink:0;">
+            <span style="font-size:12px;">Video</span>
+            <label class="toggle"><input type="checkbox" id="fVideo"><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Location</label>
+        <input type="text" class="form-control" id="fLocation" placeholder="Venue name or address">
+      </div>
+      <div class="form-group">
+        <label>Additional Info</label>
+        <textarea class="form-control" id="fInfo" placeholder="Notes about the event..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Package</label>
+        <select class="form-control" id="fPackage" onchange="onPackageChange()"></select>
+      </div>
+      <div style="font-weight:600;font-size:13px;">Pricing (EUR)</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Photo Price</label>
+          <input type="number" class="form-control" id="fPhotoPrice" value="0" oninput="calcIncome()">
+        </div>
+        <div class="form-group">
+          <label>Video Price</label>
+          <input type="number" class="form-control" id="fVideoPrice" value="0" oninput="calcIncome()">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Total Offer Price</label>
+          <input type="number" class="form-control" id="fOfferPrice" value="0" oninput="calcIncome()">
+        </div>
+        <div class="form-group">
+          <label>Costs</label>
+          <input type="number" class="form-control" id="fCosts" value="0" oninput="calcIncome()">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Deposit Amount (€)</label>
+        <input type="number" class="form-control" id="fDepositAmount" value="0" placeholder="0">
+      </div>
+      <div class="income-preview">
+        <span class="income-preview-label">Clear Income</span>
+        <span class="income-preview-value" id="incomePreview">0,00 €</span>
+      </div>
+      <div class="form-toggle">
+        <span class="toggle-label">Deposit Received</span>
+        <label class="toggle"><input type="checkbox" id="fDeposit"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="form-group">
+        <label>Attached Offers</label>
+        <input type="text" class="form-control" id="fOffers" placeholder="e.g., Photo album, Drone footage...">
+      </div>
+      <input type="hidden" id="fCalId">
+      <input type="hidden" id="fEventId">
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('eventModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEvent()" id="saveEventBtn">Create Event</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="overlay" id="settingsModal">
+  <div class="modal settings-modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title">Settings</div>
+        <div class="modal-sub">Customize your dashboard appearance and preferences</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="tabs" style="width:100%;">
+        <button class="tab active" onclick="switchSettingsTab('appearance')" id="stAppearance" style="flex:1;justify-content:center;">🎨 Appearance</button>
+        <button class="tab" onclick="switchSettingsTab('sync')" id="stSync" style="flex:1;justify-content:center;">🔄 Sync</button>
+      </div>
+      <div id="appearanceTab">
+        <div class="settings-section">Dark Themes</div>
+        <div class="theme-grid" style="margin-bottom:16px;">
+          <div class="theme-option" onclick="setTheme('')" id="thSapphire">
+            <div class="theme-preview" style="background:#2eaadc;"></div>
+            <div class="theme-name">Sapphire Night</div>
+          </div>
+          <div class="theme-option" onclick="setTheme('amethyst')" id="thAmethyst">
+            <div class="theme-preview" style="background:#a855f7;"></div>
+            <div class="theme-name">Amethyst Void</div>
+          </div>
+          <div class="theme-option" onclick="setTheme('emerald')" id="thEmerald">
+            <div class="theme-preview" style="background:#10b981;"></div>
+            <div class="theme-name">Emerald Deep</div>
+          </div>
+        </div>
+        <div class="settings-section">Light Themes</div>
+        <div class="theme-grid" style="margin-bottom:16px;">
+          <div class="theme-option" onclick="setTheme('cerulean')" id="thCerulean">
+            <div class="theme-preview" style="background:#3b82f6;"></div>
+            <div class="theme-name">Cerulean Mist</div>
+          </div>
+          <div class="theme-option" onclick="setTheme('lavender')" id="thLavender">
+            <div class="theme-preview" style="background:#7c3aed;"></div>
+            <div class="theme-name">Lavender Haze</div>
+          </div>
+          <div class="theme-option" onclick="setTheme('sage')" id="thSage">
+            <div class="theme-preview" style="background:#16a34a;"></div>
+            <div class="theme-name">Sage Morning</div>
+          </div>
+        </div>
+        <div class="settings-section">Custom Background</div>
+        <div class="custom-color-wrap">
+          <input type="color" id="customBgColor" value="#0d1117" oninput="setCustomBg(this.value)">
+          <span style="font-size:13px;color:var(--text2);">Pick a custom background color</span>
+          <button class="btn" style="margin-left:auto;font-size:12px;" onclick="clearCustomBg()">Reset</button>
+        </div>
+      </div>
+      <div id="syncTab" style="display:none;flex-direction:column;gap:12px;">
+        <div class="form-toggle">
+          <div>
+            <div class="toggle-label">Auto-Sync on Login</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:2px;">Automatically sync with Google Calendar when you open the app</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="autoSyncToggle" onchange="saveAutoSync()"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="sync-info">
+          <div class="sync-info-title">Sync Behavior</div>
+          <ul class="sync-bullets">
+            <li>New events from Google Calendar are added as "unbooked"</li>
+            <li>Existing events are never overwritten</li>
+            <li>Your pricing, deposits, and notes are always preserved</li>
+            <li>Only reads from Google Calendar (never writes to it)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="closeModal('settingsModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- CALENDAR SETTINGS MODAL -->
+<div class="overlay" id="calModal">
+  <div class="modal settings-modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title">📅 Google Calendar Settings</div>
+        <div class="modal-sub">Connect and sync your Google Calendar to import events automatically</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('calModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="cal-status">
+        <div class="cal-status-left">
+          <div class="cal-status-dot" id="calStatusDot" style="background:var(--red)"></div>
+          <span id="calStatusText">Not Connected</span>
+        </div>
+        <div class="active-badge" id="calActiveBadge">Inactive</div>
+      </div>
+      <div class="form-group">
+        <label>Select Calendar to Sync</label>
+        <select class="form-control" id="calSelect">
+          <option value="">-- Select a calendar --</option>
+        </select>
+      </div>
+      <div class="sync-info">
+        <ul class="sync-bullets">
+          <li>Syncing imports events from the past year and next year</li>
+          <li>New events are added as "unbooked" status</li>
+          <li>Existing events won't be overwritten</li>
+        </ul>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="syncNow()">🔄 Sync Now</button>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="closeModal('calModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- PACKAGE MANAGER MODAL -->
+<div class="overlay" id="pkgModal">
+  <div class="modal settings-modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title">📦 Manage Packages</div>
+        <div class="modal-sub">Define your photography & video packages</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('pkgModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="pkg-list" id="pkgList"></div>
+      <button class="btn" style="width:100%;justify-content:center;" onclick="addPkgRow()">+ Add Package</button>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('pkgModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="savePackages()">Save Packages</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="detailTitle">Event Details</div>
+        <div class="modal-sub" id="detailDate"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
+    </div>
+    <div class="modal-body" id="detailBody"></div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('detailModal')">Close</button>
+      <button class="btn btn-primary" onclick="editFromDetail()">✏️ Edit</button>
+      <button class="btn" style="border-color:var(--red);color:var(--red);" onclick="deleteFromDetail()">🗑 Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== STATE =====
+let state = {
+  user: null,
+  events: [],
+  packages: [
+    { name: 'Silver Photography Package', price: 1000 },
+    { name: 'Gold Photography Package', price: 1300 },
+    { name: 'Wedding Photo & Video Silver 1 & 1', price: 0 },
+    { name: 'Wedding Photo & Video Gold 2 & 2', price: 2500 },
+  ],
+  theme: '',
+  autoSync: false,
+  selectedCalendar: '',
+  googleToken: null,
+  calendars: [],
+  currentTab: 'events',
+  currentChart: 'monthly',
+  sortCol: 'date',
+  sortDir: 1,
+  currentEventId: null,
+  chart: null,
+};
+
+// ===== STORAGE =====
+function save() {
+  localStorage.setItem('ps_events', JSON.stringify(state.events));
+  localStorage.setItem('ps_packages', JSON.stringify(state.packages));
+  localStorage.setItem('ps_theme', state.theme);
+  localStorage.setItem('ps_autoSync', state.autoSync);
+  localStorage.setItem('ps_selCal', state.selectedCalendar);
+  localStorage.setItem('ps_user', JSON.stringify(state.user));
+}
+function load() {
+  try { state.events = JSON.parse(localStorage.getItem('ps_events')) || []; } catch(e){}
+  try { state.packages = JSON.parse(localStorage.getItem('ps_packages')) || state.packages; } catch(e){}
+  state.theme = localStorage.getItem('ps_theme') || '';
+  state.autoSync = localStorage.getItem('ps_autoSync') === 'true';
+  state.selectedCalendar = localStorage.getItem('ps_selCal') || '';
+  try { state.user = JSON.parse(localStorage.getItem('ps_user')); } catch(e){}
+}
+
+// ===== GOOGLE AUTH =====
+const CLIENT_ID = ''; // User fills this in
+const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly profile email';
+
+function signIn() {
+  if (!CLIENT_ID) {
+    // Demo with sample data
+    demoMode();
+    return;
+  }
+  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(location.origin+location.pathname)}&response_type=token&scope=${encodeURIComponent(SCOPES)}&prompt=consent`;
+  location.href = url;
+}
+
+function handleOAuthCallback() {
+  const hash = location.hash;
+  if (!hash.includes('access_token')) return false;
+  const params = new URLSearchParams(hash.slice(1));
+  state.googleToken = params.get('access_token');
+  history.replaceState(null, '', location.pathname);
+  return true;
+}
+
+async function fetchGoogleProfile() {
+  if (!state.googleToken) return;
+  const r = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+    headers: { Authorization: `Bearer ${state.googleToken}` }
+  });
+  const d = await r.json();
+  state.user = { name: d.name, email: d.email, picture: d.picture, initial: d.name[0].toUpperCase() };
+  save();
+}
+
+async function fetchCalendars() {
+  if (!state.googleToken) return;
+  const r = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList', {
+    headers: { Authorization: `Bearer ${state.googleToken}` }
+  });
+  const d = await r.json();
+  state.calendars = d.items || [];
+  const sel = document.getElementById('calSelect');
+  sel.innerHTML = '<option value="">-- Select a calendar --</option>';
+  state.calendars.forEach(c => {
+    const o = document.createElement('option');
+    o.value = c.id; o.textContent = c.summary;
+    if (c.id === state.selectedCalendar) o.selected = true;
+    sel.appendChild(o);
+  });
+  if (state.calendars.length) {
+    document.getElementById('calStatusDot').style.background = 'var(--green)';
+    document.getElementById('calStatusText').textContent = 'Connected';
+    document.getElementById('calActiveBadge').textContent = '✓ Active';
+  }
+}
+
+async function fetchCalendarEvents(calId) {
+  if (!state.googleToken || !calId) return [];
+  const now = new Date();
+  const min = new Date(now.getFullYear() - 1, 0, 1).toISOString();
+  const max = new Date(now.getFullYear() + 1, 11, 31).toISOString();
+  const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calId)}/events?timeMin=${min}&timeMax=${max}&singleEvents=true&orderBy=startTime&maxResults=2500`;
+  const r = await fetch(url, { headers: { Authorization: `Bearer ${state.googleToken}` } });
+  const d = await r.json();
+  return d.items || [];
+}
+
+async function syncCalendar() {
+  const btn = document.getElementById('syncBtn');
+  const icon = document.getElementById('syncIcon');
+  icon.className = 'spin'; icon.textContent = '🔄';
+  btn.disabled = true;
+
+  if (!state.googleToken) {
+    showToast('Not connected to Google. Click Sync in Calendar Settings.');
+    icon.className = ''; btn.disabled = false;
+    return;
+  }
+
+  const calId = document.getElementById('calSelect').value || state.selectedCalendar;
+  if (!calId) {
+    showToast('Please select a calendar in Calendar Settings first.');
+    icon.className = ''; btn.disabled = false;
+    openCalSettings();
+    return;
+  }
+  state.selectedCalendar = calId;
+
+  try {
+    const items = await fetchCalendarEvents(calId);
+    let added = 0;
+    items.forEach(ev => {
+      if (state.events.find(e => e.calId === ev.id)) return;
+      const dateStr = ev.start?.date || ev.start?.dateTime?.slice(0,10) || '';
+      state.events.push({
+        id: Date.now() + Math.random(),
+        calId: ev.id,
+        date: dateStr,
+        name: ev.summary || 'Untitled',
+        location: ev.location || '',
+        info: ev.description || '',
+        status: 'Unbooked',
+        package: '',
+        video: false,
+        photoPrice: 0,
+        videoPrice: 0,
+        offerPrice: 0,
+        costs: 0,
+        clearIncome: 0,
+        deposit: false,
+        depositAmount: 0,
+        offers: '',
+      });
+      added++;
+    });
+    save();
+    renderAll();
+    showToast(`✅ Synced! ${added} new event(s) added.`);
+  } catch(e) {
+    showToast('Sync error: ' + e.message);
+  }
+  icon.className = ''; btn.disabled = false;
+}
+
+async function syncNow() {
+  closeModal('calModal');
+  await syncCalendar();
+}
+
+// ===== DEMO MODE =====
+function demoMode() {
+  state.user = { name: 'Konstantinos Gkekopoulos', email: 'gkekon@gmail.com', initial: 'K' };
+  if (state.events.length === 0) {
+    state.events = [
+      { id:1, calId:'demo1', date:'2026-01-17', name:'Γάμος Ροδούλα & Αντώνης', location:'', info:'', status:'Completed', package:'Silver Photography Package', video:true, photoPrice:950, videoPrice:0, offerPrice:1200, costs:250, clearIncome:950, deposit:true, depositAmount:300, offers:'' },
+      { id:2, calId:'demo2', date:'2026-05-09', name:'Xristina Moutsi Gamobaptisi', location:'', info:'', status:'Booked', package:'', video:true, photoPrice:1000, videoPrice:0, offerPrice:1300, costs:300, clearIncome:1000, deposit:true, depositAmount:200, offers:'' },
+      { id:3, calId:'demo3', date:'2026-05-23', name:'Eleni wedding Arolithos', location:'', info:'', status:'Booked', package:'', video:true, photoPrice:1000, videoPrice:0, offerPrice:1600, costs:600, clearIncome:1000, deposit:true, depositAmount:300, offers:'' },
+      { id:4, calId:'demo4', date:'2026-06-07', name:'Photoshoot - Mobolaji Ajose-Adeogun', location:'', info:'', status:'Booked', package:'', video:false, photoPrice:150, videoPrice:0, offerPrice:150, costs:0, clearIncome:150, deposit:true, depositAmount:0, offers:'' },
+      { id:5, calId:'demo5', date:'2026-06-27', name:'Gianna Kontaxaki', location:'', info:'', status:'Booked', package:'', video:false, photoPrice:150, videoPrice:0, offerPrice:150, costs:0, clearIncome:150, deposit:false, depositAmount:0, offers:'' },
+      { id:6, calId:'demo6', date:'2026-07-09', name:'Wedding Alex and Franci Palaikastro!', location:'', info:'', status:'Booked', package:'Silver Photography Package', video:true, photoPrice:1200, videoPrice:0, offerPrice:2500, costs:1300, clearIncome:1200, deposit:false, depositAmount:0, offers:'' },
+      { id:7, calId:'demo7', date:'2026-07-12', name:'Εμμανουέλα Βάπτιση Καλό χωριό', location:'', info:'', status:'Booked', package:'', video:false, photoPrice:300, videoPrice:0, offerPrice:350, costs:50, clearIncome:300, deposit:false, depositAmount:0, offers:'' },
+      { id:8, calId:'demo8', date:'2026-07-23', name:'Alexandra Wedding!!!', location:'', info:'', status:'Booked', package:'Silver Photography Package', video:false, photoPrice:1400, videoPrice:0, offerPrice:1450, costs:50, clearIncome:1400, deposit:true, depositAmount:400, offers:'' },
+      { id:9, calId:'demo9', date:'2026-07-26', name:'Δώρα Μανιώτη γαμοβάπτιση', location:'', info:'', status:'Booked', package:'Wedding Photo & Video Gold 2 & 2', video:true, photoPrice:1400, videoPrice:0, offerPrice:2400, costs:1000, clearIncome:1400, deposit:true, depositAmount:400, offers:'' },
+      { id:10, calId:'demo10', date:'2026-08-22', name:'baptish keratokampos Marinos Fakis', location:'', info:'', status:'Booked', package:'', video:true, photoPrice:950, videoPrice:0, offerPrice:950, costs:0, clearIncome:950, deposit:true, depositAmount:200, offers:'' },
+      { id:11, calId:'demo11', date:'2026-09-05', name:'Konstantinos Sokopoulos Wedding', location:'', info:'', status:'Booked', package:'Gold Photography Package', video:true, photoPrice:1200, videoPrice:0, offerPrice:2450, costs:1250, clearIncome:1200, deposit:true, depositAmount:300, offers:'' },
+      { id:12, calId:'demo12', date:'2026-09-12', name:'Nadya', location:'', info:'', status:'Unbooked', package:'', video:true, photoPrice:0, videoPrice:0, offerPrice:0, costs:0, clearIncome:0, deposit:false, depositAmount:0, offers:'' },
+      { id:13, calId:'demo13', date:'2026-09-18', name:'Στέλιος Χαλασοφουρνάκης Γάμος', location:'', info:'', status:'Booked', package:'', video:true, photoPrice:850, videoPrice:0, offerPrice:1100, costs:250, clearIncome:850, deposit:false, depositAmount:0, offers:'' },
+      { id:14, calId:'demo14', date:'2026-09-27', name:'Kostas Fragiadakis Wedding Aristote...', location:'Ηράκλειο', info:'', status:'Booked', package:'', video:true, photoPrice:800, videoPrice:0, offerPrice:800, costs:0, clearIncome:800, deposit:false, depositAmount:0, offers:'' },
+      { id:15, calId:'demo15', date:'2026-09-29', name:'Νίκος Αστυρακακης', location:'', info:'', status:'Booked', package:'Wedding Photo & Video Gold 2 & 2', video:true, photoPrice:1050, videoPrice:0, offerPrice:2400, costs:1350, clearIncome:1050, deposit:true, depositAmount:300, offers:'' },
+      { id:16, calId:'demo16', date:'2026-10-04', name:'βαπτιση Στέλλα', location:'', info:'', status:'Booked', package:'', video:true, photoPrice:350, videoPrice:0, offerPrice:350, costs:0, clearIncome:350, deposit:false, depositAmount:0, offers:'' },
+      { id:17, calId:'demo17', date:'2026-11-08', name:'Anna Zouka', location:'', info:'', status:'Booked', package:'Wedding Photo & Video Gold 2 & 2', video:true, photoPrice:1300, videoPrice:0, offerPrice:2500, costs:1200, clearIncome:1300, deposit:true, depositAmount:400, offers:'' },
+      { id:18, calId:'demo18', date:'2026-08-14', name:'Madeleine Wedding', location:'AgrecoFarms, Αδελε 741 50', info:'', status:'Booked', package:'Silver Photography Package', video:false, photoPrice:900, videoPrice:0, offerPrice:900, costs:0, clearIncome:900, deposit:false, depositAmount:0, offers:'' },
+    ];
+  }
+  save();
+  showApp();
+}
+
+// ===== SHOW APP =====
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  const u = state.user;
+  if (u) {
+    document.getElementById('userAvatar').textContent = u.initial || u.name?.[0] || 'U';
+    document.getElementById('dropdownName').textContent = u.name || '';
+    document.getElementById('dropdownEmail').textContent = u.email || '';
+  }
+  applyTheme(state.theme);
+  renderPackagesBar();
+  renderAll();
+  updateThemeUI();
+  document.getElementById('autoSyncToggle').checked = state.autoSync;
+  if (state.autoSync && state.googleToken) syncCalendar();
+}
+
+// ===== THEME =====
+function setTheme(t) {
+  state.theme = t;
+  applyTheme(t);
+  save();
+  updateThemeUI();
+  if (state.chart) { state.chart.destroy(); state.chart = null; renderChart(); }
+}
+function applyTheme(t) {
+  document.body.className = t ? `theme-${t}` : '';
+  const custom = localStorage.getItem('ps_customBg');
+  if (custom && !t) document.documentElement.style.setProperty('--bg', custom);
+  else document.documentElement.style.removeProperty('--bg');
+}
+function updateThemeUI() {
+  ['Sapphire','Amethyst','Emerald','Cerulean','Lavender','Sage'].forEach(n => {
+    const el = document.getElementById('th'+n);
+    if (el) el.classList.remove('active');
+  });
+  const map = {'':'thSapphire','amethyst':'thAmethyst','emerald':'thEmerald','cerulean':'thCerulean','lavender':'thLavender','sage':'thSage'};
+  const el = document.getElementById(map[state.theme] || 'thSapphire');
+  if (el) el.classList.add('active');
+}
+function setCustomBg(v) {
+  localStorage.setItem('ps_customBg', v);
+  document.documentElement.style.setProperty('--bg', v);
+  state.theme = '';
+  document.body.className = '';
+  save();
+}
+function clearCustomBg() {
+  localStorage.removeItem('ps_customBg');
+  document.documentElement.style.removeProperty('--bg');
+}
+
+// ===== RENDER =====
+function renderAll() {
+  renderStats();
+  renderTable();
+  if (state.currentTab === 'analytics') renderAnalytics();
+}
+
+function fmt(n) {
+  return n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+}
+
+function renderStats() {
+  const year = new Date().getFullYear();
+  const month = new Date().getMonth();
+  const bookedEvents = state.events.filter(e => e.status !== 'Unbooked');
+  const yearlyIncome = bookedEvents.filter(e => new Date(e.date).getFullYear() === year).reduce((s,e) => s + (e.clearIncome||0), 0);
+  const monthlyIncome = bookedEvents.filter(e => { const d = new Date(e.date); return d.getFullYear() === year && d.getMonth() === month; }).reduce((s,e) => s + (e.clearIncome||0), 0);
+  const pendingDeposits = state.events.filter(e => !e.deposit && e.status !== 'Unbooked').length;
+  const today = new Date().toISOString().slice(0,10);
+  const upcoming = state.events.filter(e => e.date >= today && e.status !== 'Completed').sort((a,b) => a.date.localeCompare(b.date));
+  const next = upcoming[0];
+
+  document.getElementById('statYearly').textContent = fmt(yearlyIncome);
+  document.getElementById('statYearlySub').textContent = bookedEvents.length + ' booked events';
+  document.getElementById('statMonthly').textContent = fmt(monthlyIncome);
+  document.getElementById('statDeposits').textContent = pendingDeposits;
+  document.getElementById('statNextName').textContent = next ? next.name : '—';
+  document.getElementById('statNextDate').textContent = next ? next.date : 'No upcoming events';
+}
+
+function renderPackagesBar() {
+  const bar = document.getElementById('packagesBar');
+  bar.innerHTML = '<span class="pkg-label">Packages:</span>';
+  state.packages.forEach(p => {
+    const chip = document.createElement('div');
+    chip.className = 'pkg-chip';
+    chip.textContent = `${p.name} • ${p.price.toLocaleString('de-DE')},00 €`;
+    bar.appendChild(chip);
+  });
+  const add = document.createElement('button');
+  add.className = 'add-pkg-btn';
+  add.innerHTML = '+ Add';
+  add.onclick = openPkgManager;
+  bar.appendChild(add);
+}
+
+let sortCol = 'date', sortDir = 1;
+function sortTable(col) {
+  if (sortCol === col) sortDir *= -1;
+  else { sortCol = col; sortDir = 1; }
+  document.querySelectorAll('.sort-arrow').forEach(el => { el.classList.remove('active'); el.textContent = '↕'; });
+  const arrow = document.getElementById('sort-' + col);
+  if (arrow) { arrow.classList.add('active'); arrow.textContent = sortDir === 1 ? '↑' : '↓'; }
+  renderTable();
+}
+
+function renderTable() {
+  const tbody = document.getElementById('eventsBody');
+  const sorted = [...state.events].sort((a,b) => {
+    let va = a[sortCol] ?? '', vb = b[sortCol] ?? '';
+    if (typeof va === 'number') return (va - vb) * sortDir;
+    return String(va).localeCompare(String(vb)) * sortDir;
+  });
+
+  const total = state.events.length;
+  const unbooked = state.events.filter(e => e.status === 'Unbooked').length;
+  document.getElementById('totalBadge').textContent = total + ' event' + (total !== 1 ? 's' : '');
+  const ub = document.getElementById('unbookedBadge');
+  if (unbooked) { ub.style.display = ''; ub.textContent = unbooked + ' unbooked'; }
+  else ub.style.display = 'none';
+
+  tbody.innerHTML = '';
+  sorted.forEach(ev => {
+    const tr = document.createElement('tr');
+    tr.onclick = () => openDetail(ev.id);
+    tr.innerHTML = `
+      <td class="td-date">${ev.date}</td>
+      <td class="td-name" title="${ev.name}">${ev.name}</td>
+      <td>${ev.video ? '✅' : '<input type="checkbox" disabled>'}</td>
+      <td class="td-pkg">${ev.package || '-'}</td>
+      <td style="color:var(--text2);font-size:12px;">${ev.location ? '📍 ' + ev.location : '-'}</td>
+      <td><span class="${ev.deposit ? 'check-yes check-icon' : 'check-no check-icon'}">${ev.deposit ? '✓' : '✕'}</span></td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;">${fmt(ev.offerPrice||0)}</td>
+      <td class="td-income">${fmt(ev.clearIncome||0)}</td>
+      <td><span class="status-pill status-${(ev.status||'Booked').toLowerCase()}">${ev.status}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ===== ANALYTICS =====
+function renderAnalytics() {
+  const booked = state.events.filter(e => e.status !== 'Unbooked');
+  const totalRev = booked.reduce((s,e) => s + (e.clearIncome||0), 0);
+  const totalCosts = booked.reduce((s,e) => s + (e.costs||0), 0);
+  const margin = totalRev > 0 ? ((totalRev / (totalRev + totalCosts)) * 100).toFixed(1) : 0;
+  const deposits = booked.filter(e => e.deposit).reduce((s,e) => s + (e.depositAmount||0), 0);
+
+  document.getElementById('aRevenue').textContent = totalRev.toLocaleString('de-DE') + ' €';
+  document.getElementById('aCosts').textContent = totalCosts.toLocaleString('de-DE') + ' €';
+  document.getElementById('aMargin').textContent = margin + '%';
+  document.getElementById('aDeposits').textContent = deposits.toLocaleString('de-DE', {minimumFractionDigits:2}) + ' €';
+
+  renderChart();
+}
+
+function renderChart() {
+  const canvas = document.getElementById('mainChart');
+  if (state.chart) { state.chart.destroy(); state.chart = null; }
+  const accentColor = getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#2eaadc';
+  const textColor = getComputedStyle(document.body).getPropertyValue('--text2').trim() || '#8b949e';
+  const gridColor = getComputedStyle(document.body).getPropertyValue('--border').trim() || '#30363d';
+  const bgColor = getComputedStyle(document.body).getPropertyValue('--bg3').trim() || '#1c2333';
+
+  Chart.defaults.color = textColor;
+  Chart.defaults.borderColor = gridColor;
+
+  if (state.currentChart === 'monthly') {
+    document.getElementById('chartTitle').textContent = 'Monthly Income (' + new Date().getFullYear() + ')';
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const year = new Date().getFullYear();
+    const incomeByMonth = Array(12).fill(0);
+    const countByMonth = Array(12).fill(0);
+    state.events.filter(e => e.status !== 'Unbooked' && new Date(e.date).getFullYear() === year).forEach(e => {
+      const m = new Date(e.date).getMonth();
+      incomeByMonth[m] += e.clearIncome || 0;
+      countByMonth[m]++;
+    });
+    state.chart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: months,
+        datasets: [
+          { label: 'Events', data: countByMonth, backgroundColor: bgColor, borderColor: gridColor, borderWidth: 1, yAxisID: 'y1' },
+          { label: 'Income', data: incomeByMonth, backgroundColor: accentColor, borderRadius: 4, yAxisID: 'y' }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: textColor } } }, scales: { y: { ticks: { callback: v => '€'+v } }, y1: { position:'right', grid:{display:false}, ticks:{stepSize:1} } } }
+    });
+  } else if (state.currentChart === 'status') {
+    document.getElementById('chartTitle').textContent = 'Event Status Breakdown';
+    const booked = state.events.filter(e => e.status === 'Booked').length;
+    const completed = state.events.filter(e => e.status === 'Completed').length;
+    const unbooked = state.events.filter(e => e.status === 'Unbooked').length;
+    state.chart = new Chart(canvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['Booked', 'Completed', 'Unbooked'],
+        datasets: [{ data: [booked, completed, unbooked], backgroundColor: ['#2ea043', accentColor, '#f0883e'], borderWidth: 2, borderColor: bgColor }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: textColor } } } }
+    });
+  } else {
+    document.getElementById('chartTitle').textContent = 'Revenue by Package';
+    const pkgMap = {};
+    state.events.filter(e => e.status !== 'Unbooked').forEach(e => {
+      const k = e.package || 'No Package';
+      pkgMap[k] = (pkgMap[k] || 0) + (e.clearIncome || 0);
+    });
+    const labels = Object.keys(pkgMap);
+    const data = labels.map(l => pkgMap[l]);
+    state.chart = new Chart(canvas, {
+      type: 'bar',
+      indexAxis: 'y',
+      data: {
+        labels,
+        datasets: [{ data, backgroundColor: accentColor, borderRadius: 4 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { callback: v => '€'+v } } } }
+    });
+  }
+}
+
+// ===== TABS =====
+function switchTab(t) {
+  state.currentTab = t;
+  document.getElementById('eventsPanel').style.display = t === 'events' ? '' : 'none';
+  const ap = document.getElementById('analyticsPanel');
+  ap.style.display = t === 'analytics' ? 'flex' : 'none';
+  if (t === 'analytics') { ap.classList.add('active'); renderAnalytics(); }
+  document.getElementById('tabEvents').classList.toggle('active', t === 'events');
+  document.getElementById('tabAnalytics').classList.toggle('active', t === 'analytics');
+}
+
+function switchChart(t) {
+  state.currentChart = t;
+  ['Monthly','Status','Packages'].forEach(n => document.getElementById('ct'+n).classList.remove('active'));
+  const map = { monthly:'ctMonthly', status:'ctStatus', packages:'ctPackages' };
+  document.getElementById(map[t]).classList.add('active');
+  renderChart();
+}
+
+function switchSettingsTab(t) {
+  document.getElementById('appearanceTab').style.display = t === 'appearance' ? '' : 'none';
+  document.getElementById('syncTab').style.display = t === 'sync' ? 'flex' : 'none';
+  document.getElementById('stAppearance').classList.toggle('active', t === 'appearance');
+  document.getElementById('stSync').classList.toggle('active', t === 'sync');
+}
+
+// ===== MODALS =====
+function openSettings() { document.getElementById('settingsModal').classList.add('active'); updateThemeUI(); }
+function openCalSettings() { document.getElementById('calModal').classList.add('active'); fetchCalendars(); }
+function openPkgManager() { document.getElementById('pkgModal').classList.add('active'); renderPkgList(); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); }));
+
+// ===== ADD/EDIT EVENT =====
+function openAddEvent() {
+  state.currentEventId = null;
+  document.getElementById('modalTitle').textContent = 'New Event';
+  document.getElementById('modalSub').textContent = 'Add a new wedding or event booking';
+  document.getElementById('saveEventBtn').textContent = 'Create Event';
+  document.getElementById('fDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('fStatus').value = 'Unbooked';
+  document.getElementById('fName').value = '';
+  document.getElementById('fVideo').checked = false;
+  document.getElementById('fLocation').value = '';
+  document.getElementById('fInfo').value = '';
+  document.getElementById('fPhotoPrice').value = 0;
+  document.getElementById('fVideoPrice').value = 0;
+  document.getElementById('fOfferPrice').value = 0;
+  document.getElementById('fCosts').value = 0;
+  document.getElementById('fDeposit').checked = false;
+  document.getElementById('fDepositAmount').value = 0;
+  document.getElementById('fOffers').value = '';
+  document.getElementById('fCalId').value = '';
+  document.getElementById('fEventId').value = '';
+  populatePackageSelect('');
+  calcIncome();
+  document.getElementById('eventModal').classList.add('active');
+}
+
+function openEditEvent(id) {
+  const ev = state.events.find(e => e.id === id);
+  if (!ev) return;
+  state.currentEventId = id;
+  document.getElementById('modalTitle').textContent = 'Edit Event';
+  document.getElementById('modalSub').textContent = 'Update booking details';
+  document.getElementById('saveEventBtn').textContent = 'Save Changes';
+  document.getElementById('fDate').value = ev.date;
+  document.getElementById('fStatus').value = ev.status;
+  document.getElementById('fName').value = ev.name;
+  document.getElementById('fVideo').checked = ev.video;
+  document.getElementById('fLocation').value = ev.location;
+  document.getElementById('fInfo').value = ev.info;
+  document.getElementById('fPhotoPrice').value = ev.photoPrice;
+  document.getElementById('fVideoPrice').value = ev.videoPrice;
+  document.getElementById('fOfferPrice').value = ev.offerPrice;
+  document.getElementById('fCosts').value = ev.costs;
+  document.getElementById('fDeposit').checked = ev.deposit;
+  document.getElementById('fDepositAmount').value = ev.depositAmount || 0;
+  document.getElementById('fOffers').value = ev.offers;
+  document.getElementById('fCalId').value = ev.calId || '';
+  document.getElementById('fEventId').value = ev.id;
+  populatePackageSelect(ev.package);
+  calcIncome();
+  document.getElementById('eventModal').classList.add('active');
+}
+
+function populatePackageSelect(selected) {
+  const sel = document.getElementById('fPackage');
+  sel.innerHTML = '<option value="">No package</option>';
+  state.packages.forEach(p => {
+    const o = document.createElement('option');
+    o.value = p.name; o.textContent = p.name + ' (' + p.price.toLocaleString('de-DE') + ' €)';
+    if (p.name === selected) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+
+function onPackageChange() {
+  const name = document.getElementById('fPackage').value;
+  const pkg = state.packages.find(p => p.name === name);
+  if (pkg && pkg.price > 0) {
+    document.getElementById('fOfferPrice').value = pkg.price;
+    calcIncome();
+  }
+}
+
+function calcIncome() {
+  const offer = parseFloat(document.getElementById('fOfferPrice').value) || 0;
+  const costs = parseFloat(document.getElementById('fCosts').value) || 0;
+  const clear = offer - costs;
+  document.getElementById('incomePreview').textContent = fmt(clear);
+}
+
+function saveEvent() {
+  const id = state.currentEventId;
+  const ev = {
+    id: id || (Date.now() + Math.random()),
+    calId: document.getElementById('fCalId').value,
+    date: document.getElementById('fDate').value,
+    name: document.getElementById('fName').value || 'Unnamed Event',
+    status: document.getElementById('fStatus').value,
+    video: document.getElementById('fVideo').checked,
+    location: document.getElementById('fLocation').value,
+    info: document.getElementById('fInfo').value,
+    package: document.getElementById('fPackage').value,
+    photoPrice: parseFloat(document.getElementById('fPhotoPrice').value) || 0,
+    videoPrice: parseFloat(document.getElementById('fVideoPrice').value) || 0,
+    offerPrice: parseFloat(document.getElementById('fOfferPrice').value) || 0,
+    costs: parseFloat(document.getElementById('fCosts').value) || 0,
+    clearIncome: (parseFloat(document.getElementById('fOfferPrice').value)||0) - (parseFloat(document.getElementById('fCosts').value)||0),
+    deposit: document.getElementById('fDeposit').checked,
+    depositAmount: parseFloat(document.getElementById('fDepositAmount').value) || 0,
+    offers: document.getElementById('fOffers').value,
+  };
+  if (id) {
+    const i = state.events.findIndex(e => e.id === id);
+    if (i >= 0) state.events[i] = ev;
+  } else {
+    state.events.push(ev);
+  }
+  save();
+  renderAll();
+  closeModal('eventModal');
+  showToast(id ? '✅ Event updated.' : '✅ Event created.');
+}
+
+// ===== DETAIL =====
+let detailEventId = null;
+function openDetail(id) {
+  const ev = state.events.find(e => e.id === id);
+  if (!ev) return;
+  detailEventId = id;
+  document.getElementById('detailTitle').textContent = ev.name;
+  document.getElementById('detailDate').textContent = ev.date;
+  document.getElementById('detailBody').innerHTML = `
+    <div class="detail-section">
+      <div class="detail-grid">
+        <div class="detail-item"><div class="detail-item-label">Status</div><div><span class="status-pill status-${ev.status.toLowerCase()}">${ev.status}</span></div></div>
+        <div class="detail-item"><div class="detail-item-label">Video</div><div class="detail-item-value">${ev.video ? '✅ Yes' : '—'}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Location</div><div class="detail-item-value">${ev.location || '—'}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Package</div><div class="detail-item-value">${ev.package || '—'}</div></div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-grid">
+        <div class="detail-item"><div class="detail-item-label">Photo Price</div><div class="detail-item-value">${fmt(ev.photoPrice||0)}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Video Price</div><div class="detail-item-value">${fmt(ev.videoPrice||0)}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Total Offer Price</div><div class="detail-item-value">${fmt(ev.offerPrice||0)}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Costs</div><div class="detail-item-value">${fmt(ev.costs||0)}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Clear Income</div><div class="detail-item-value" style="color:var(--accent);font-weight:700;">${fmt(ev.clearIncome||0)}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Deposit Received</div><div class="detail-item-value">${ev.deposit ? '✅ Yes' : '❌ No'}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Deposit Amount</div><div class="detail-item-value">${fmt(ev.depositAmount||0)}</div></div>
+      </div>
+    </div>
+    ${ev.offers ? `<div class="detail-section"><div class="detail-item-label">Attached Offers</div><div class="detail-item-value" style="margin-top:4px;">${ev.offers}</div></div>` : ''}
+    ${ev.info ? `<div class="detail-section"><div class="detail-item-label">Additional Info</div><div class="detail-item-value" style="margin-top:4px;">${ev.info}</div></div>` : ''}
+    ${ev.calId ? `<div style="margin-top:4px;"><div class="detail-item-label">Google Calendar ID</div><div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);margin-top:2px;">${ev.calId}</div></div>` : ''}
+  `;
+  document.getElementById('detailModal').classList.add('active');
+}
+
+function editFromDetail() {
+  closeModal('detailModal');
+  openEditEvent(detailEventId);
+}
+
+function deleteFromDetail() {
+  if (!confirm('Delete this event?')) return;
+  state.events = state.events.filter(e => e.id !== detailEventId);
+  save();
+  renderAll();
+  closeModal('detailModal');
+  showToast('🗑 Event deleted.');
+}
+
+// ===== PACKAGES =====
+function renderPkgList() {
+  const list = document.getElementById('pkgList');
+  list.innerHTML = '';
+  state.packages.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'pkg-row';
+    row.innerHTML = `
+      <input class="form-control" type="text" value="${p.name}" id="pname${i}" placeholder="Package name">
+      <input class="form-control" type="number" value="${p.price}" id="pprice${i}" placeholder="Price" style="max-width:100px;">
+      <button class="pkg-delete" onclick="deletePkg(${i})">✕</button>
+    `;
+    list.appendChild(row);
+  });
+}
+function addPkgRow() {
+  state.packages.push({ name: 'New Package', price: 0 });
+  renderPkgList();
+}
+function deletePkg(i) { state.packages.splice(i,1); renderPkgList(); }
+function savePackages() {
+  state.packages = state.packages.map((_,i) => ({
+    name: document.getElementById('pname'+i).value,
+    price: parseFloat(document.getElementById('pprice'+i).value) || 0,
+  }));
+  save();
+  renderPackagesBar();
+  closeModal('pkgModal');
+  showToast('📦 Packages saved.');
+}
+
+// ===== AUTO SYNC =====
+function saveAutoSync() {
+  state.autoSync = document.getElementById('autoSyncToggle').checked;
+  save();
+}
+
+// ===== USER MENU =====
+function toggleUserMenu() {
+  const d = document.getElementById('userDropdown');
+  d.style.display = d.style.display === 'none' ? '' : 'none';
+}
+document.addEventListener('click', e => {
+  const d = document.getElementById('userDropdown');
+  if (d && !d.contains(e.target) && !e.target.closest('.user-menu-trigger')) {
+    d.style.display = 'none';
+  }
+});
+
+// ===== EXPORT =====
+function exportCSV(type) {
+  let csv, filename;
+  if (type === 'events') {
+    const headers = ['Date','Name','Status','Video','Package','Location','Photo Price','Video Price','Offer Price','Costs','Clear Income','Deposit','Deposit Amount','Offers','Info','Calendar ID'];
+    const rows = state.events.map(e => [e.date, `"${e.name}"`, e.status, e.video?'Yes':'No', `"${e.package}"`, `"${e.location}"`, e.photoPrice, e.videoPrice, e.offerPrice, e.costs, e.clearIncome, e.deposit?'Yes':'No', e.depositAmount, `"${e.offers}"`, `"${e.info}"`, `"${e.calId}"`]);
+    csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+    filename = 'photosync-events.csv';
+  } else {
+    const year = new Date().getFullYear();
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const rows = months.map((m,i) => {
+      const evs = state.events.filter(e => { const d=new Date(e.date); return d.getFullYear()===year && d.getMonth()===i && e.status!=='Unbooked'; });
+      return [m, evs.length, evs.reduce((s,e)=>s+(e.clearIncome||0),0).toFixed(2), evs.reduce((s,e)=>s+(e.costs||0),0).toFixed(2)];
+    });
+    csv = [['Month','Events','Income (€)','Costs (€)'], ...rows].map(r=>r.join(',')).join('\n');
+    filename = 'photosync-summary.csv';
+  }
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+// ===== SIGN OUT =====
+function signOut() {
+  state.user = null; state.googleToken = null;
+  localStorage.removeItem('ps_user');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._to);
+  t._to = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ===== INIT =====
+load();
+if (handleOAuthCallback()) {
+  fetchGoogleProfile().then(showApp);
+} else if (state.user) {
+  showApp();
+} else {
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+</script>
+</body>
+</html>
