@@ -290,7 +290,7 @@ textarea.form-control { resize: vertical; min-height: 70px; }
       <div class="dropdown" id="userDropdown" style="display:none;" onclick="event.stopPropagation()">
         <div class="dropdown-user">
           <div class="dropdown-user-name" id="dropdownName">User</div>
-          <div class="dropdown-user-email" id="dropdownEmail">user@gmail.com</div>
+          <div class="dropdown-user-email" id="dropdownEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f481879186b49399959d98da979b99">[email&#160;protected]</a></div>
         </div>
         <button class="dropdown-item" onclick="openSettings();toggleUserMenu()">⚙️ Settings</button>
         <button class="dropdown-item" onclick="openCalSettings();toggleUserMenu()">📅 Calendar Settings</button>
@@ -650,7 +650,7 @@ textarea.form-control { resize: vertical; min-height: 70px; }
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ===== STATE =====
 let state = {
   user: null,
@@ -693,26 +693,42 @@ function load() {
 }
 
 // ===== GOOGLE AUTH =====
-const CLIENT_ID = '229545255239-rha9kn9rkf0l6c5uioo4rbg4n8aig2eq.apps.googleusercontent.com';
+const CLIENT_ID = '229545255239-rha9kn9rkf0l6c5uioo4rbg4n8aig2eq.apps.googleusercontent.com'; // User fills this in
 const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly profile email';
 
 function signIn() {
   if (!CLIENT_ID) {
-    // Demo with sample data
     demoMode();
     return;
   }
-  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(location.origin+location.pathname)}&response_type=token&scope=${encodeURIComponent(SCOPES)}&prompt=consent`;
+  // Build exact redirect URI matching what's in Google Cloud Console
+  const redirectUri = location.origin + location.pathname;
+  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(SCOPES)}&prompt=consent&include_granted_scopes=true`;
   location.href = url;
 }
 
 function handleOAuthCallback() {
+  // Check URL hash for token (implicit flow returns it in the hash)
   const hash = location.hash;
-  if (!hash.includes('access_token')) return false;
-  const params = new URLSearchParams(hash.slice(1));
-  state.googleToken = params.get('access_token');
-  history.replaceState(null, '', location.pathname);
-  return true;
+  if (hash && hash.includes('access_token')) {
+    const params = new URLSearchParams(hash.slice(1));
+    const token = params.get('access_token');
+    if (token) {
+      state.googleToken = token;
+      // Store token so it survives the page reload
+      localStorage.setItem('ps_gtoken', token);
+      // Clean the URL
+      history.replaceState(null, '', location.pathname);
+      return true;
+    }
+  }
+  // Check if we have a stored token
+  const stored = localStorage.getItem('ps_gtoken');
+  if (stored) {
+    state.googleToken = stored;
+    return 'stored';
+  }
+  return false;
 }
 
 async function fetchGoogleProfile() {
@@ -1349,6 +1365,7 @@ function exportCSV(type) {
 function signOut() {
   state.user = null; state.googleToken = null;
   localStorage.removeItem('ps_user');
+  localStorage.removeItem('ps_gtoken');
   document.getElementById('app').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
 }
@@ -1362,10 +1379,23 @@ function showToast(msg) {
   t._to = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
+
 // ===== INIT =====
 load();
-if (handleOAuthCallback()) {
+const oauthResult = handleOAuthCallback();
+if (oauthResult === true) {
   fetchGoogleProfile().then(showApp);
+} else if (oauthResult === 'stored') {
+  fetchGoogleProfile().then(() => {
+    if (state.user) showApp();
+    else {
+      localStorage.removeItem('ps_gtoken');
+      document.getElementById('loginScreen').style.display = 'flex';
+    }
+  }).catch(() => {
+    localStorage.removeItem('ps_gtoken');
+    document.getElementById('loginScreen').style.display = 'flex';
+  });
 } else if (state.user) {
   showApp();
 } else {
