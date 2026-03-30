@@ -6,7 +6,6 @@
 <title>PhotoSync</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root {
   --bg: #0d1117;
@@ -214,7 +213,6 @@ textarea.form-control { resize: vertical; min-height: 70px; }
 .detail-section { border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 2px; }
 .detail-section:last-child { border-bottom: none; }
 .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.detail-item { }
 .detail-item-label { font-size: 11px; color: var(--text2); margin-bottom: 2px; }
 .detail-item-value { font-size: 13px; font-weight: 500; }
 
@@ -291,7 +289,7 @@ textarea.form-control { resize: vertical; min-height: 70px; }
       <div class="dropdown" id="userDropdown" style="display:none;" onclick="event.stopPropagation()">
         <div class="dropdown-user">
           <div class="dropdown-user-name" id="dropdownName">User</div>
-          <div class="dropdown-user-email" id="dropdownEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f481879186b49399959d98da979b99">[email&#160;protected]</a></div>
+          <div class="dropdown-user-email" id="dropdownEmail">[email&#160;protected]</div>
         </div>
         <button class="dropdown-item" onclick="openSettings();toggleUserMenu()">⚙️ Settings</button>
         <button class="dropdown-item" onclick="openCalSettings();toggleUserMenu()">📅 Calendar Settings</button>
@@ -308,7 +306,6 @@ textarea.form-control { resize: vertical; min-height: 70px; }
 
 <!-- MAIN -->
 <main>
-  <!-- STAT CARDS -->
   <div class="stat-grid">
     <div class="stat-card">
       <div class="stat-label">📈 Yearly Income</div>
@@ -332,18 +329,15 @@ textarea.form-control { resize: vertical; min-height: 70px; }
     </div>
   </div>
 
-  <!-- PACKAGES BAR -->
   <div class="packages-bar" id="packagesBar">
     <span class="pkg-label">Packages:</span>
   </div>
 
-  <!-- TABS -->
   <div class="tabs">
     <button class="tab active" onclick="switchTab('events')" id="tabEvents">🗓 Events</button>
     <button class="tab" onclick="switchTab('analytics')" id="tabAnalytics">📊 Analytics</button>
   </div>
 
-  <!-- EVENTS TABLE -->
   <div id="eventsPanel">
     <div class="table-panel">
       <div class="table-header">
@@ -374,7 +368,6 @@ textarea.form-control { resize: vertical; min-height: 70px; }
     </div>
   </div>
 
-  <!-- ANALYTICS -->
   <div id="analyticsPanel" class="analytics-panel">
     <div class="analytics-stats">
       <div class="a-card"><div class="a-label">Total Revenue</div><div class="a-value" id="aRevenue" style="color:var(--accent)">0 €</div></div>
@@ -651,7 +644,8 @@ textarea.form-control { resize: vertical; min-height: 70px; }
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+<script>
 // ===== STATE =====
 let state = {
   user: null,
@@ -694,114 +688,165 @@ function load() {
 }
 
 // ===== GOOGLE AUTH =====
-const CLIENT_ID = '229545255239-rha9kn9rkf0l6c5uioo4rbg4n8aig2eq.apps.googleusercontent.com'; // User fills this in
-const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
-
-let tokenClient = null;
-
-function initGoogleAuth() {
-  if (!CLIENT_ID || !window.google) return;
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SCOPES,
-    callback: async (response) => {
-      if (response.error) {
-        showToast('Google sign-in error: ' + response.error);
-        return;
-      }
-      state.googleToken = response.access_token;
-      localStorage.setItem('ps_gtoken', response.access_token);
-      await fetchGoogleProfile();
-      showApp();
-    },
-  });
-}
+const CLIENT_ID = '229545255239-rha9kn9rkf0l6c5uioo4rbg4n8aig2eq.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly profile email';
 
 function signIn() {
   if (!CLIENT_ID) {
     demoMode();
     return;
   }
-  // Try stored token first
-  const stored = localStorage.getItem('ps_gtoken');
-  if (stored) {
-    state.googleToken = stored;
-    fetchGoogleProfile().then(() => {
-      if (state.user) { showApp(); return; }
-      requestNewToken();
-    }).catch(() => requestNewToken());
-    return;
-  }
-  requestNewToken();
-}
 
-function requestNewToken() {
-  if (!tokenClient) {
-    // GIS not loaded yet, wait and retry
-    setTimeout(() => {
-      initGoogleAuth();
-      if (tokenClient) tokenClient.requestAccessToken({ prompt: 'consent' });
-      else showToast('Google Sign-In not ready. Please try again in a moment.');
-    }, 1000);
-    return;
-  }
-  tokenClient.requestAccessToken({ prompt: 'consent' });
+  const redirectUri = location.origin + location.pathname;
+  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(SCOPES)}&prompt=consent&include_granted_scopes=true`;
+  location.href = url;
 }
 
 function handleOAuthCallback() {
-  // GIS handles redirect — just check for stored token
+  const hash = location.hash;
+
+  if (hash && hash.includes('access_token')) {
+    const params = new URLSearchParams(hash.slice(1));
+    const token = params.get('access_token');
+
+    if (token) {
+      state.googleToken = token;
+      localStorage.setItem('ps_gtoken', token);
+      history.replaceState(null, '', location.pathname + location.search);
+      return true;
+    }
+  }
+
   const stored = localStorage.getItem('ps_gtoken');
   if (stored) {
     state.googleToken = stored;
     return 'stored';
   }
+
   return false;
 }
 
-// Init GIS once script loads
-window.addEventListener('load', () => {
-  setTimeout(initGoogleAuth, 500);
-});
-
 async function fetchGoogleProfile() {
-  if (!state.googleToken) return;
+  if (!state.googleToken) return false;
+
   const r = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
     headers: { Authorization: `Bearer ${state.googleToken}` }
   });
+
+  if (!r.ok) {
+    throw new Error('Failed to fetch Google profile');
+  }
+
   const d = await r.json();
-  state.user = { name: d.name, email: d.email, picture: d.picture, initial: d.name[0].toUpperCase() };
+
+  state.user = {
+    name: d.name || 'Google User',
+    email: d.email || '',
+    picture: d.picture || '',
+    initial: (d.name?.[0] || 'U').toUpperCase()
+  };
+
   save();
+  return true;
+}
+
+function updateCalendarConnectionUI(isConnected) {
+  const dot = document.getElementById('calStatusDot');
+  const text = document.getElementById('calStatusText');
+  const badge = document.getElementById('calActiveBadge');
+  const syncBtn = document.getElementById('syncBtn');
+
+  if (isConnected) {
+    if (dot) dot.style.background = 'var(--green)';
+    if (text) text.textContent = 'Connected';
+    if (badge) badge.textContent = '✓ Active';
+    if (syncBtn) syncBtn.disabled = false;
+  } else {
+    if (dot) dot.style.background = 'var(--red)';
+    if (text) text.textContent = 'Not Connected';
+    if (badge) badge.textContent = 'Inactive';
+    if (syncBtn) syncBtn.disabled = false;
+  }
 }
 
 async function fetchCalendars() {
-  if (!state.googleToken) return;
-  const r = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList', {
-    headers: { Authorization: `Bearer ${state.googleToken}` }
-  });
-  const d = await r.json();
-  state.calendars = d.items || [];
-  const sel = document.getElementById('calSelect');
-  sel.innerHTML = '<option value="">-- Select a calendar --</option>';
-  state.calendars.forEach(c => {
-    const o = document.createElement('option');
-    o.value = c.id; o.textContent = c.summary;
-    if (c.id === state.selectedCalendar) o.selected = true;
-    sel.appendChild(o);
-  });
-  if (state.calendars.length) {
-    document.getElementById('calStatusDot').style.background = 'var(--green)';
-    document.getElementById('calStatusText').textContent = 'Connected';
-    document.getElementById('calActiveBadge').textContent = '✓ Active';
+  if (!state.googleToken) {
+    updateCalendarConnectionUI(false);
+    return [];
+  }
+
+  try {
+    const r = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList', {
+      headers: { Authorization: `Bearer ${state.googleToken}` }
+    });
+
+    if (!r.ok) {
+      if (r.status === 401) {
+        localStorage.removeItem('ps_gtoken');
+        state.googleToken = null;
+        state.calendars = [];
+        state.selectedCalendar = '';
+        save();
+        updateCalendarConnectionUI(false);
+        showToast('Google session expired. Please sign in again.');
+        return [];
+      }
+
+      const errText = await r.text();
+      throw new Error(`Calendar fetch failed (${r.status}) ${errText}`);
+    }
+
+    const d = await r.json();
+    state.calendars = Array.isArray(d.items) ? d.items : [];
+
+    const sel = document.getElementById('calSelect');
+    if (sel) {
+      sel.innerHTML = '<option value="">-- Select a calendar --</option>';
+
+      state.calendars.forEach(c => {
+        const o = document.createElement('option');
+        o.value = c.id;
+        o.textContent = c.summary || c.id;
+        if (c.id === state.selectedCalendar) o.selected = true;
+        sel.appendChild(o);
+      });
+
+      if (!state.selectedCalendar && state.calendars.length) {
+        const primary = state.calendars.find(c => c.primary) || state.calendars[0];
+        state.selectedCalendar = primary.id;
+        sel.value = primary.id;
+        save();
+      }
+    }
+
+    updateCalendarConnectionUI(state.calendars.length > 0);
+    return state.calendars;
+  } catch (e) {
+    console.error('fetchCalendars error:', e);
+    updateCalendarConnectionUI(false);
+    showToast('Could not load calendars.');
+    return [];
   }
 }
 
 async function fetchCalendarEvents(calId) {
   if (!state.googleToken || !calId) return [];
+
   const now = new Date();
   const min = new Date(now.getFullYear() - 1, 0, 1).toISOString();
   const max = new Date(now.getFullYear() + 1, 11, 31).toISOString();
+
   const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calId)}/events?timeMin=${min}&timeMax=${max}&singleEvents=true&orderBy=startTime&maxResults=2500`;
-  const r = await fetch(url, { headers: { Authorization: `Bearer ${state.googleToken}` } });
+
+  const r = await fetch(url, {
+    headers: { Authorization: `Bearer ${state.googleToken}` }
+  });
+
+  if (!r.ok) {
+    const errText = await r.text();
+    throw new Error(`Events fetch failed (${r.status}) ${errText}`);
+  }
+
   const d = await r.json();
   return d.items || [];
 }
@@ -809,30 +854,41 @@ async function fetchCalendarEvents(calId) {
 async function syncCalendar() {
   const btn = document.getElementById('syncBtn');
   const icon = document.getElementById('syncIcon');
-  icon.className = 'spin'; icon.textContent = '🔄';
+
+  icon.className = 'spin';
+  icon.textContent = '🔄';
   btn.disabled = true;
 
-  if (!state.googleToken) {
-    showToast('Not connected to Google. Click Sync in Calendar Settings.');
-    icon.className = ''; btn.disabled = false;
-    return;
-  }
-
-  const calId = document.getElementById('calSelect').value || state.selectedCalendar;
-  if (!calId) {
-    showToast('Please select a calendar in Calendar Settings first.');
-    icon.className = ''; btn.disabled = false;
-    openCalSettings();
-    return;
-  }
-  state.selectedCalendar = calId;
-
   try {
+    if (!state.googleToken) {
+      showToast('Not connected to Google. Please sign in first.');
+      return;
+    }
+
+    if (!state.calendars.length) {
+      await fetchCalendars();
+    }
+
+    const calSelect = document.getElementById('calSelect');
+    const calId = (calSelect?.value || state.selectedCalendar || '').trim();
+
+    if (!calId) {
+      showToast('Please select a calendar first.');
+      openCalSettings();
+      return;
+    }
+
+    state.selectedCalendar = calId;
+    save();
+
     const items = await fetchCalendarEvents(calId);
     let added = 0;
+
     items.forEach(ev => {
       if (state.events.find(e => e.calId === ev.id)) return;
-      const dateStr = ev.start?.date || ev.start?.dateTime?.slice(0,10) || '';
+
+      const dateStr = ev.start?.date || ev.start?.dateTime?.slice(0, 10) || '';
+
       state.events.push({
         id: Date.now() + Math.random(),
         calId: ev.id,
@@ -852,15 +908,20 @@ async function syncCalendar() {
         depositAmount: 0,
         offers: '',
       });
+
       added++;
     });
+
     save();
     renderAll();
     showToast(`✅ Synced! ${added} new event(s) added.`);
-  } catch(e) {
+  } catch (e) {
+    console.error('syncCalendar error:', e);
     showToast('Sync error: ' + e.message);
+  } finally {
+    icon.className = '';
+    btn.disabled = false;
   }
-  icon.className = ''; btn.disabled = false;
 }
 
 async function syncNow() {
@@ -871,6 +932,10 @@ async function syncNow() {
 // ===== DEMO MODE =====
 function demoMode() {
   state.user = { name: 'Konstantinos Gkekopoulos', email: 'gkekon@gmail.com', initial: 'K' };
+  state.googleToken = null;
+  state.calendars = [];
+  state.selectedCalendar = '';
+
   if (state.events.length === 0) {
     state.events = [
       { id:1, calId:'demo1', date:'2026-01-17', name:'Γάμος Ροδούλα & Αντώνης', location:'', info:'', status:'Completed', package:'Silver Photography Package', video:true, photoPrice:950, videoPrice:0, offerPrice:1200, costs:250, clearIncome:950, deposit:true, depositAmount:300, offers:'' },
@@ -893,6 +958,7 @@ function demoMode() {
       { id:18, calId:'demo18', date:'2026-08-14', name:'Madeleine Wedding', location:'AgrecoFarms, Αδελε 741 50', info:'', status:'Booked', package:'Silver Photography Package', video:false, photoPrice:900, videoPrice:0, offerPrice:900, costs:0, clearIncome:900, deposit:false, depositAmount:0, offers:'' },
     ];
   }
+
   save();
   showApp();
 }
@@ -901,18 +967,32 @@ function demoMode() {
 function showApp() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
+
   const u = state.user;
   if (u) {
     document.getElementById('userAvatar').textContent = u.initial || u.name?.[0] || 'U';
     document.getElementById('dropdownName').textContent = u.name || '';
     document.getElementById('dropdownEmail').textContent = u.email || '';
   }
+
   applyTheme(state.theme);
   renderPackagesBar();
   renderAll();
   updateThemeUI();
-  document.getElementById('autoSyncToggle').checked = state.autoSync;
-  if (state.autoSync && state.googleToken) syncCalendar();
+
+  const autoSyncToggle = document.getElementById('autoSyncToggle');
+  if (autoSyncToggle) autoSyncToggle.checked = state.autoSync;
+
+  updateCalendarConnectionUI(!!state.googleToken && state.calendars.length > 0);
+
+  if (state.googleToken && state.selectedCalendar) {
+    const sel = document.getElementById('calSelect');
+    if (sel) sel.value = state.selectedCalendar;
+  }
+
+  if (state.autoSync && state.googleToken && state.selectedCalendar) {
+    syncCalendar();
+  }
 }
 
 // ===== THEME =====
@@ -921,7 +1001,11 @@ function setTheme(t) {
   applyTheme(t);
   save();
   updateThemeUI();
-  if (state.chart) { state.chart.destroy(); state.chart = null; renderChart(); }
+  if (state.chart) {
+    state.chart.destroy();
+    state.chart = null;
+    renderChart();
+  }
 }
 function applyTheme(t) {
   document.body.className = t ? `theme-${t}` : '';
@@ -931,7 +1015,7 @@ function applyTheme(t) {
 }
 function updateThemeUI() {
   ['Sapphire','Amethyst','Emerald','Cerulean','Lavender','Sage'].forEach(n => {
-    const el = document.getElementById('th'+n);
+    const el = document.getElementById('th' + n);
     if (el) el.classList.remove('active');
   });
   const map = {'':'thSapphire','amethyst':'thAmethyst','emerald':'thEmerald','cerulean':'thCerulean','lavender':'thLavender','sage':'thSage'};
@@ -958,18 +1042,30 @@ function renderAll() {
 }
 
 function fmt(n) {
-  return n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+  return Number(n || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
 }
 
 function renderStats() {
   const year = new Date().getFullYear();
   const month = new Date().getMonth();
   const bookedEvents = state.events.filter(e => e.status !== 'Unbooked');
-  const yearlyIncome = bookedEvents.filter(e => new Date(e.date).getFullYear() === year).reduce((s,e) => s + (e.clearIncome||0), 0);
-  const monthlyIncome = bookedEvents.filter(e => { const d = new Date(e.date); return d.getFullYear() === year && d.getMonth() === month; }).reduce((s,e) => s + (e.clearIncome||0), 0);
+  const yearlyIncome = bookedEvents
+    .filter(e => new Date(e.date).getFullYear() === year)
+    .reduce((s, e) => s + (e.clearIncome || 0), 0);
+
+  const monthlyIncome = bookedEvents
+    .filter(e => {
+      const d = new Date(e.date);
+      return d.getFullYear() === year && d.getMonth() === month;
+    })
+    .reduce((s, e) => s + (e.clearIncome || 0), 0);
+
   const pendingDeposits = state.events.filter(e => !e.deposit && e.status !== 'Unbooked').length;
-  const today = new Date().toISOString().slice(0,10);
-  const upcoming = state.events.filter(e => e.date >= today && e.status !== 'Completed').sort((a,b) => a.date.localeCompare(b.date));
+  const today = new Date().toISOString().slice(0, 10);
+  const upcoming = state.events
+    .filter(e => e.date >= today && e.status !== 'Completed')
+    .sort((a, b) => a.date.localeCompare(b.date));
+
   const next = upcoming[0];
 
   document.getElementById('statYearly').textContent = fmt(yearlyIncome);
@@ -983,12 +1079,14 @@ function renderStats() {
 function renderPackagesBar() {
   const bar = document.getElementById('packagesBar');
   bar.innerHTML = '<span class="pkg-label">Packages:</span>';
+
   state.packages.forEach(p => {
     const chip = document.createElement('div');
     chip.className = 'pkg-chip';
-    chip.textContent = `${p.name} • ${p.price.toLocaleString('de-DE')},00 €`;
+    chip.textContent = `${p.name} • ${Number(p.price || 0).toLocaleString('de-DE')},00 €`;
     bar.appendChild(chip);
   });
+
   const add = document.createElement('button');
   add.className = 'add-pkg-btn';
   add.innerHTML = '+ Add';
@@ -999,42 +1097,67 @@ function renderPackagesBar() {
 let sortCol = 'date', sortDir = 1;
 function sortTable(col) {
   if (sortCol === col) sortDir *= -1;
-  else { sortCol = col; sortDir = 1; }
-  document.querySelectorAll('.sort-arrow').forEach(el => { el.classList.remove('active'); el.textContent = '↕'; });
+  else {
+    sortCol = col;
+    sortDir = 1;
+  }
+
+  document.querySelectorAll('.sort-arrow').forEach(el => {
+    el.classList.remove('active');
+    el.textContent = '↕';
+  });
+
   const arrow = document.getElementById('sort-' + col);
-  if (arrow) { arrow.classList.add('active'); arrow.textContent = sortDir === 1 ? '↑' : '↓'; }
+  if (arrow) {
+    arrow.classList.add('active');
+    arrow.textContent = sortDir === 1 ? '↑' : '↓';
+  }
+
   renderTable();
 }
 
 function renderTable() {
   const tbody = document.getElementById('eventsBody');
-  const sorted = [...state.events].sort((a,b) => {
-    let va = a[sortCol] ?? '', vb = b[sortCol] ?? '';
-    if (typeof va === 'number') return (va - vb) * sortDir;
+
+  const sorted = [...state.events].sort((a, b) => {
+    let va = a[sortCol] ?? '';
+    let vb = b[sortCol] ?? '';
+
+    if (typeof va === 'number' && typeof vb === 'number') {
+      return (va - vb) * sortDir;
+    }
+
     return String(va).localeCompare(String(vb)) * sortDir;
   });
 
   const total = state.events.length;
   const unbooked = state.events.filter(e => e.status === 'Unbooked').length;
+
   document.getElementById('totalBadge').textContent = total + ' event' + (total !== 1 ? 's' : '');
   const ub = document.getElementById('unbookedBadge');
-  if (unbooked) { ub.style.display = ''; ub.textContent = unbooked + ' unbooked'; }
-  else ub.style.display = 'none';
+
+  if (unbooked) {
+    ub.style.display = '';
+    ub.textContent = unbooked + ' unbooked';
+  } else {
+    ub.style.display = 'none';
+  }
 
   tbody.innerHTML = '';
+
   sorted.forEach(ev => {
     const tr = document.createElement('tr');
     tr.onclick = () => openDetail(ev.id);
     tr.innerHTML = `
       <td class="td-date">${ev.date}</td>
-      <td class="td-name" title="${ev.name}">${ev.name}</td>
+      <td class="td-name" title="${escapeHtml(ev.name)}">${escapeHtml(ev.name)}</td>
       <td>${ev.video ? '✅' : '<input type="checkbox" disabled>'}</td>
-      <td class="td-pkg">${ev.package || '-'}</td>
-      <td style="color:var(--text2);font-size:12px;">${ev.location ? '📍 ' + ev.location : '-'}</td>
+      <td class="td-pkg">${escapeHtml(ev.package || '-')}</td>
+      <td style="color:var(--text2);font-size:12px;">${ev.location ? '📍 ' + escapeHtml(ev.location) : '-'}</td>
       <td><span class="${ev.deposit ? 'check-yes check-icon' : 'check-no check-icon'}">${ev.deposit ? '✓' : '✕'}</span></td>
-      <td style="font-family:'DM Mono',monospace;font-size:12px;">${fmt(ev.offerPrice||0)}</td>
-      <td class="td-income">${fmt(ev.clearIncome||0)}</td>
-      <td><span class="status-pill status-${(ev.status||'Booked').toLowerCase()}">${ev.status}</span></td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;">${fmt(ev.offerPrice || 0)}</td>
+      <td class="td-income">${fmt(ev.clearIncome || 0)}</td>
+      <td><span class="status-pill status-${(ev.status || 'Booked').toLowerCase()}">${escapeHtml(ev.status)}</span></td>
     `;
     tbody.appendChild(tr);
   });
@@ -1043,22 +1166,26 @@ function renderTable() {
 // ===== ANALYTICS =====
 function renderAnalytics() {
   const booked = state.events.filter(e => e.status !== 'Unbooked');
-  const totalRev = booked.reduce((s,e) => s + (e.clearIncome||0), 0);
-  const totalCosts = booked.reduce((s,e) => s + (e.costs||0), 0);
+  const totalRev = booked.reduce((s, e) => s + (e.clearIncome || 0), 0);
+  const totalCosts = booked.reduce((s, e) => s + (e.costs || 0), 0);
   const margin = totalRev > 0 ? ((totalRev / (totalRev + totalCosts)) * 100).toFixed(1) : 0;
-  const deposits = booked.filter(e => e.deposit).reduce((s,e) => s + (e.depositAmount||0), 0);
+  const deposits = booked.filter(e => e.deposit).reduce((s, e) => s + (e.depositAmount || 0), 0);
 
   document.getElementById('aRevenue').textContent = totalRev.toLocaleString('de-DE') + ' €';
   document.getElementById('aCosts').textContent = totalCosts.toLocaleString('de-DE') + ' €';
   document.getElementById('aMargin').textContent = margin + '%';
-  document.getElementById('aDeposits').textContent = deposits.toLocaleString('de-DE', {minimumFractionDigits:2}) + ' €';
+  document.getElementById('aDeposits').textContent = deposits.toLocaleString('de-DE', { minimumFractionDigits: 2 }) + ' €';
 
   renderChart();
 }
 
 function renderChart() {
   const canvas = document.getElementById('mainChart');
-  if (state.chart) { state.chart.destroy(); state.chart = null; }
+  if (state.chart) {
+    state.chart.destroy();
+    state.chart = null;
+  }
+
   const accentColor = getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#2eaadc';
   const textColor = getComputedStyle(document.body).getPropertyValue('--text2').trim() || '#8b949e';
   const gridColor = getComputedStyle(document.body).getPropertyValue('--border').trim() || '#30363d';
@@ -1069,15 +1196,20 @@ function renderChart() {
 
   if (state.currentChart === 'monthly') {
     document.getElementById('chartTitle').textContent = 'Monthly Income (' + new Date().getFullYear() + ')';
+
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const year = new Date().getFullYear();
     const incomeByMonth = Array(12).fill(0);
     const countByMonth = Array(12).fill(0);
-    state.events.filter(e => e.status !== 'Unbooked' && new Date(e.date).getFullYear() === year).forEach(e => {
-      const m = new Date(e.date).getMonth();
-      incomeByMonth[m] += e.clearIncome || 0;
-      countByMonth[m]++;
-    });
+
+    state.events
+      .filter(e => e.status !== 'Unbooked' && new Date(e.date).getFullYear() === year)
+      .forEach(e => {
+        const m = new Date(e.date).getMonth();
+        incomeByMonth[m] += e.clearIncome || 0;
+        countByMonth[m]++;
+      });
+
     state.chart = new Chart(canvas, {
       type: 'bar',
       data: {
@@ -1087,30 +1219,52 @@ function renderChart() {
           { label: 'Income', data: incomeByMonth, backgroundColor: accentColor, borderRadius: 4, yAxisID: 'y' }
         ]
       },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: textColor } } }, scales: { y: { ticks: { callback: v => '€'+v } }, y1: { position:'right', grid:{display:false}, ticks:{stepSize:1} } } }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: textColor } } },
+        scales: {
+          y: { ticks: { callback: v => '€' + v } },
+          y1: { position: 'right', grid: { display: false }, ticks: { stepSize: 1 } }
+        }
+      }
     });
   } else if (state.currentChart === 'status') {
     document.getElementById('chartTitle').textContent = 'Event Status Breakdown';
+
     const booked = state.events.filter(e => e.status === 'Booked').length;
     const completed = state.events.filter(e => e.status === 'Completed').length;
     const unbooked = state.events.filter(e => e.status === 'Unbooked').length;
+
     state.chart = new Chart(canvas, {
       type: 'doughnut',
       data: {
         labels: ['Booked', 'Completed', 'Unbooked'],
-        datasets: [{ data: [booked, completed, unbooked], backgroundColor: ['#2ea043', accentColor, '#f0883e'], borderWidth: 2, borderColor: bgColor }]
+        datasets: [{
+          data: [booked, completed, unbooked],
+          backgroundColor: ['#2ea043', accentColor, '#f0883e'],
+          borderWidth: 2,
+          borderColor: bgColor
+        }]
       },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: textColor } } } }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: textColor } } }
+      }
     });
   } else {
     document.getElementById('chartTitle').textContent = 'Revenue by Package';
+
     const pkgMap = {};
     state.events.filter(e => e.status !== 'Unbooked').forEach(e => {
       const k = e.package || 'No Package';
       pkgMap[k] = (pkgMap[k] || 0) + (e.clearIncome || 0);
     });
+
     const labels = Object.keys(pkgMap);
     const data = labels.map(l => pkgMap[l]);
+
     state.chart = new Chart(canvas, {
       type: 'bar',
       indexAxis: 'y',
@@ -1118,7 +1272,12 @@ function renderChart() {
         labels,
         datasets: [{ data, backgroundColor: accentColor, borderRadius: 4 }]
       },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { callback: v => '€'+v } } } }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { x: { ticks: { callback: v => '€' + v } } }
+      }
     });
   }
 }
@@ -1127,16 +1286,22 @@ function renderChart() {
 function switchTab(t) {
   state.currentTab = t;
   document.getElementById('eventsPanel').style.display = t === 'events' ? '' : 'none';
+
   const ap = document.getElementById('analyticsPanel');
   ap.style.display = t === 'analytics' ? 'flex' : 'none';
-  if (t === 'analytics') { ap.classList.add('active'); renderAnalytics(); }
+
+  if (t === 'analytics') {
+    ap.classList.add('active');
+    renderAnalytics();
+  }
+
   document.getElementById('tabEvents').classList.toggle('active', t === 'events');
   document.getElementById('tabAnalytics').classList.toggle('active', t === 'analytics');
 }
 
 function switchChart(t) {
   state.currentChart = t;
-  ['Monthly','Status','Packages'].forEach(n => document.getElementById('ct'+n).classList.remove('active'));
+  ['Monthly','Status','Packages'].forEach(n => document.getElementById('ct' + n).classList.remove('active'));
   const map = { monthly:'ctMonthly', status:'ctStatus', packages:'ctPackages' };
   document.getElementById(map[t]).classList.add('active');
   renderChart();
@@ -1150,12 +1315,27 @@ function switchSettingsTab(t) {
 }
 
 // ===== MODALS =====
-function openSettings() { document.getElementById('settingsModal').classList.add('active'); updateThemeUI(); }
-function openCalSettings() { document.getElementById('calModal').classList.add('active'); fetchCalendars(); }
-function openPkgManager() { document.getElementById('pkgModal').classList.add('active'); renderPkgList(); }
-function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+function openSettings() {
+  document.getElementById('settingsModal').classList.add('active');
+  updateThemeUI();
+}
+async function openCalSettings() {
+  document.getElementById('calModal').classList.add('active');
+  await fetchCalendars();
+}
+function openPkgManager() {
+  document.getElementById('pkgModal').classList.add('active');
+  renderPkgList();
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
 
-document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); }));
+document.querySelectorAll('.overlay').forEach(o => {
+  o.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('active');
+  });
+});
 
 // ===== ADD/EDIT EVENT =====
 function openAddEvent() {
@@ -1186,6 +1366,7 @@ function openAddEvent() {
 function openEditEvent(id) {
   const ev = state.events.find(e => e.id === id);
   if (!ev) return;
+
   state.currentEventId = id;
   document.getElementById('modalTitle').textContent = 'Edit Event';
   document.getElementById('modalSub').textContent = 'Update booking details';
@@ -1213,9 +1394,11 @@ function openEditEvent(id) {
 function populatePackageSelect(selected) {
   const sel = document.getElementById('fPackage');
   sel.innerHTML = '<option value="">No package</option>';
+
   state.packages.forEach(p => {
     const o = document.createElement('option');
-    o.value = p.name; o.textContent = p.name + ' (' + p.price.toLocaleString('de-DE') + ' €)';
+    o.value = p.name;
+    o.textContent = p.name + ' (' + Number(p.price || 0).toLocaleString('de-DE') + ' €)';
     if (p.name === selected) o.selected = true;
     sel.appendChild(o);
   });
@@ -1224,6 +1407,7 @@ function populatePackageSelect(selected) {
 function onPackageChange() {
   const name = document.getElementById('fPackage').value;
   const pkg = state.packages.find(p => p.name === name);
+
   if (pkg && pkg.price > 0) {
     document.getElementById('fOfferPrice').value = pkg.price;
     calcIncome();
@@ -1239,6 +1423,7 @@ function calcIncome() {
 
 function saveEvent() {
   const id = state.currentEventId;
+
   const ev = {
     id: id || (Date.now() + Math.random()),
     calId: document.getElementById('fCalId').value,
@@ -1253,17 +1438,19 @@ function saveEvent() {
     videoPrice: parseFloat(document.getElementById('fVideoPrice').value) || 0,
     offerPrice: parseFloat(document.getElementById('fOfferPrice').value) || 0,
     costs: parseFloat(document.getElementById('fCosts').value) || 0,
-    clearIncome: (parseFloat(document.getElementById('fOfferPrice').value)||0) - (parseFloat(document.getElementById('fCosts').value)||0),
+    clearIncome: (parseFloat(document.getElementById('fOfferPrice').value) || 0) - (parseFloat(document.getElementById('fCosts').value) || 0),
     deposit: document.getElementById('fDeposit').checked,
     depositAmount: parseFloat(document.getElementById('fDepositAmount').value) || 0,
     offers: document.getElementById('fOffers').value,
   };
+
   if (id) {
     const i = state.events.findIndex(e => e.id === id);
     if (i >= 0) state.events[i] = ev;
   } else {
     state.events.push(ev);
   }
+
   save();
   renderAll();
   closeModal('eventModal');
@@ -1275,32 +1462,33 @@ let detailEventId = null;
 function openDetail(id) {
   const ev = state.events.find(e => e.id === id);
   if (!ev) return;
+
   detailEventId = id;
   document.getElementById('detailTitle').textContent = ev.name;
   document.getElementById('detailDate').textContent = ev.date;
   document.getElementById('detailBody').innerHTML = `
     <div class="detail-section">
       <div class="detail-grid">
-        <div class="detail-item"><div class="detail-item-label">Status</div><div><span class="status-pill status-${ev.status.toLowerCase()}">${ev.status}</span></div></div>
+        <div class="detail-item"><div class="detail-item-label">Status</div><div><span class="status-pill status-${ev.status.toLowerCase()}">${escapeHtml(ev.status)}</span></div></div>
         <div class="detail-item"><div class="detail-item-label">Video</div><div class="detail-item-value">${ev.video ? '✅ Yes' : '—'}</div></div>
-        <div class="detail-item"><div class="detail-item-label">Location</div><div class="detail-item-value">${ev.location || '—'}</div></div>
-        <div class="detail-item"><div class="detail-item-label">Package</div><div class="detail-item-value">${ev.package || '—'}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Location</div><div class="detail-item-value">${escapeHtml(ev.location || '—')}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Package</div><div class="detail-item-value">${escapeHtml(ev.package || '—')}</div></div>
       </div>
     </div>
     <div class="detail-section">
       <div class="detail-grid">
-        <div class="detail-item"><div class="detail-item-label">Photo Price</div><div class="detail-item-value">${fmt(ev.photoPrice||0)}</div></div>
-        <div class="detail-item"><div class="detail-item-label">Video Price</div><div class="detail-item-value">${fmt(ev.videoPrice||0)}</div></div>
-        <div class="detail-item"><div class="detail-item-label">Total Offer Price</div><div class="detail-item-value">${fmt(ev.offerPrice||0)}</div></div>
-        <div class="detail-item"><div class="detail-item-label">Costs</div><div class="detail-item-value">${fmt(ev.costs||0)}</div></div>
-        <div class="detail-item"><div class="detail-item-label">Clear Income</div><div class="detail-item-value" style="color:var(--accent);font-weight:700;">${fmt(ev.clearIncome||0)}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Photo Price</div><div class="detail-item-value">${fmt(ev.photoPrice || 0)}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Video Price</div><div class="detail-item-value">${fmt(ev.videoPrice || 0)}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Total Offer Price</div><div class="detail-item-value">${fmt(ev.offerPrice || 0)}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Costs</div><div class="detail-item-value">${fmt(ev.costs || 0)}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Clear Income</div><div class="detail-item-value" style="color:var(--accent);font-weight:700;">${fmt(ev.clearIncome || 0)}</div></div>
         <div class="detail-item"><div class="detail-item-label">Deposit Received</div><div class="detail-item-value">${ev.deposit ? '✅ Yes' : '❌ No'}</div></div>
-        <div class="detail-item"><div class="detail-item-label">Deposit Amount</div><div class="detail-item-value">${fmt(ev.depositAmount||0)}</div></div>
+        <div class="detail-item"><div class="detail-item-label">Deposit Amount</div><div class="detail-item-value">${fmt(ev.depositAmount || 0)}</div></div>
       </div>
     </div>
-    ${ev.offers ? `<div class="detail-section"><div class="detail-item-label">Attached Offers</div><div class="detail-item-value" style="margin-top:4px;">${ev.offers}</div></div>` : ''}
-    ${ev.info ? `<div class="detail-section"><div class="detail-item-label">Additional Info</div><div class="detail-item-value" style="margin-top:4px;">${ev.info}</div></div>` : ''}
-    ${ev.calId ? `<div style="margin-top:4px;"><div class="detail-item-label">Google Calendar ID</div><div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);margin-top:2px;">${ev.calId}</div></div>` : ''}
+    ${ev.offers ? `<div class="detail-section"><div class="detail-item-label">Attached Offers</div><div class="detail-item-value" style="margin-top:4px;">${escapeHtml(ev.offers)}</div></div>` : ''}
+    ${ev.info ? `<div class="detail-section"><div class="detail-item-label">Additional Info</div><div class="detail-item-value" style="margin-top:4px;">${escapeHtml(ev.info)}</div></div>` : ''}
+    ${ev.calId ? `<div style="margin-top:4px;"><div class="detail-item-label">Google Calendar ID</div><div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);margin-top:2px;">${escapeHtml(ev.calId)}</div></div>` : ''}
   `;
   document.getElementById('detailModal').classList.add('active');
 }
@@ -1323,12 +1511,13 @@ function deleteFromDetail() {
 function renderPkgList() {
   const list = document.getElementById('pkgList');
   list.innerHTML = '';
+
   state.packages.forEach((p, i) => {
     const row = document.createElement('div');
     row.className = 'pkg-row';
     row.innerHTML = `
-      <input class="form-control" type="text" value="${p.name}" id="pname${i}" placeholder="Package name">
-      <input class="form-control" type="number" value="${p.price}" id="pprice${i}" placeholder="Price" style="max-width:100px;">
+      <input class="form-control" type="text" value="${escapeAttr(p.name)}" id="pname${i}" placeholder="Package name">
+      <input class="form-control" type="number" value="${Number(p.price || 0)}" id="pprice${i}" placeholder="Price" style="max-width:100px;">
       <button class="pkg-delete" onclick="deletePkg(${i})">✕</button>
     `;
     list.appendChild(row);
@@ -1338,12 +1527,16 @@ function addPkgRow() {
   state.packages.push({ name: 'New Package', price: 0 });
   renderPkgList();
 }
-function deletePkg(i) { state.packages.splice(i,1); renderPkgList(); }
+function deletePkg(i) {
+  state.packages.splice(i, 1);
+  renderPkgList();
+}
 function savePackages() {
-  state.packages = state.packages.map((_,i) => ({
-    name: document.getElementById('pname'+i).value,
-    price: parseFloat(document.getElementById('pprice'+i).value) || 0,
+  state.packages = state.packages.map((_, i) => ({
+    name: document.getElementById('pname' + i).value,
+    price: parseFloat(document.getElementById('pprice' + i).value) || 0,
   }));
+
   save();
   renderPackagesBar();
   closeModal('pkgModal');
@@ -1368,25 +1561,55 @@ document.addEventListener('click', e => {
   }
 });
 
+// ===== CALENDAR SELECT PERSIST =====
+document.addEventListener('change', e => {
+  if (e.target && e.target.id === 'calSelect') {
+    state.selectedCalendar = e.target.value || '';
+    save();
+  }
+});
+
 // ===== EXPORT =====
 function exportCSV(type) {
   let csv, filename;
+
   if (type === 'events') {
     const headers = ['Date','Name','Status','Video','Package','Location','Photo Price','Video Price','Offer Price','Costs','Clear Income','Deposit','Deposit Amount','Offers','Info','Calendar ID'];
-    const rows = state.events.map(e => [e.date, `"${e.name}"`, e.status, e.video?'Yes':'No', `"${e.package}"`, `"${e.location}"`, e.photoPrice, e.videoPrice, e.offerPrice, e.costs, e.clearIncome, e.deposit?'Yes':'No', e.depositAmount, `"${e.offers}"`, `"${e.info}"`, `"${e.calId}"`]);
+    const rows = state.events.map(e => [
+      e.date,
+      `"${String(e.name || '').replace(/"/g, '""')}"`,
+      e.status,
+      e.video ? 'Yes' : 'No',
+      `"${String(e.package || '').replace(/"/g, '""')}"`,
+      `"${String(e.location || '').replace(/"/g, '""')}"`,
+      e.photoPrice,
+      e.videoPrice,
+      e.offerPrice,
+      e.costs,
+      e.clearIncome,
+      e.deposit ? 'Yes' : 'No',
+      e.depositAmount,
+      `"${String(e.offers || '').replace(/"/g, '""')}"`,
+      `"${String(e.info || '').replace(/"/g, '""')}"`,
+      `"${String(e.calId || '').replace(/"/g, '""')}"`
+    ]);
     csv = [headers, ...rows].map(r => r.join(',')).join('\n');
     filename = 'photosync-events.csv';
   } else {
     const year = new Date().getFullYear();
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const rows = months.map((m,i) => {
-      const evs = state.events.filter(e => { const d=new Date(e.date); return d.getFullYear()===year && d.getMonth()===i && e.status!=='Unbooked'; });
-      return [m, evs.length, evs.reduce((s,e)=>s+(e.clearIncome||0),0).toFixed(2), evs.reduce((s,e)=>s+(e.costs||0),0).toFixed(2)];
+    const rows = months.map((m, i) => {
+      const evs = state.events.filter(e => {
+        const d = new Date(e.date);
+        return d.getFullYear() === year && d.getMonth() === i && e.status !== 'Unbooked';
+      });
+      return [m, evs.length, evs.reduce((s, e) => s + (e.clearIncome || 0), 0).toFixed(2), evs.reduce((s, e) => s + (e.costs || 0), 0).toFixed(2)];
     });
-    csv = [['Month','Events','Income (€)','Costs (€)'], ...rows].map(r=>r.join(',')).join('\n');
+    csv = [['Month','Events','Income (€)','Costs (€)'], ...rows].map(r => r.join(',')).join('\n');
     filename = 'photosync-summary.csv';
   }
-  const blob = new Blob([csv], {type:'text/csv'});
+
+  const blob = new Blob([csv], { type:'text/csv' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;
@@ -1395,14 +1618,18 @@ function exportCSV(type) {
 
 // ===== SIGN OUT =====
 function signOut() {
-  if (state.googleToken && window.google) {
-    google.accounts.oauth2.revoke(state.googleToken, () => {});
-  }
-  state.user = null; state.googleToken = null;
+  state.user = null;
+  state.googleToken = null;
+  state.calendars = [];
+  state.selectedCalendar = '';
+
   localStorage.removeItem('ps_user');
   localStorage.removeItem('ps_gtoken');
+  localStorage.removeItem('ps_selCal');
+
   document.getElementById('app').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
+  updateCalendarConnectionUI(false);
 }
 
 // ===== TOAST =====
@@ -1414,28 +1641,71 @@ function showToast(msg) {
   t._to = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
+// ===== HELPERS =====
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+function escapeAttr(str) {
+  return escapeHtml(str);
+}
 
 // ===== INIT =====
-load();
-const oauthResult = handleOAuthCallback();
-if (oauthResult === 'stored') {
-  fetchGoogleProfile().then(() => {
-    if (state.user) showApp();
-    else {
-      localStorage.removeItem('ps_gtoken');
-      state.googleToken = null;
-      document.getElementById('loginScreen').style.display = 'flex';
+async function initApp() {
+  load();
+
+  try {
+    const oauthResult = handleOAuthCallback();
+
+    if (oauthResult === true || oauthResult === 'stored') {
+      await fetchGoogleProfile();
+      showApp();
+      await fetchCalendars();
+      if (state.autoSync && state.selectedCalendar) {
+        await syncCalendar();
+      }
+      return;
     }
-  }).catch(() => {
+
+    if (state.user) {
+      showApp();
+
+      const storedToken = localStorage.getItem('ps_gtoken');
+      if (storedToken) {
+        state.googleToken = storedToken;
+        try {
+          await fetchCalendars();
+          if (state.autoSync && state.selectedCalendar) {
+            await syncCalendar();
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      } else {
+        updateCalendarConnectionUI(false);
+      }
+
+      return;
+    }
+
+    document.getElementById('loginScreen').style.display = 'flex';
+  } catch (e) {
+    console.error('initApp error:', e);
     localStorage.removeItem('ps_gtoken');
     state.googleToken = null;
+    state.calendars = [];
+    updateCalendarConnectionUI(false);
+    document.getElementById('app').style.display = 'none';
     document.getElementById('loginScreen').style.display = 'flex';
-  });
-} else if (state.user) {
-  showApp();
-} else {
-  document.getElementById('loginScreen').style.display = 'flex';
+    showToast('Google sign-in failed. Please try again.');
+  }
 }
+
+initApp();
 </script>
 </body>
 </html>
