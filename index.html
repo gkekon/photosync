@@ -365,10 +365,61 @@ textarea.form-control { resize: vertical; min-height: 70px; }
 </main>
 </div>
 
-<div class="overlay" id="eventModal">
-  <div class="modal">
+<div class="overlay" id="calModal">
+  <div class="modal settings-modal">
     <div class="modal-head">
       <div>
+        <div class="modal-title">📅 Google Calendar Settings</div>
+        <div class="modal-sub">Επίλεξε ποια ημερολόγια θέλεις να εμφανίζονται και να συγχρονίζονται</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('calModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="cal-status">
+        <div class="cal-status-left">
+          <div class="cal-status-dot" id="calStatusDot" style="background:var(--red)"></div>
+          <span id="calStatusText">Not Connected</span>
+        </div>
+        <div class="active-badge" id="calActiveBadge">Inactive</div>
+      </div>
+
+      <div class="form-group">
+        <label>Ημερολόγια που θέλω να εμφανίζονται</label>
+        <select class="form-control" id="calSelect" multiple size="8" style="min-height:180px;"></select>
+        <div style="font-size:11px;color:var(--text2);margin-top:6px;">
+          Κράτα πατημένο Ctrl / Cmd για πολλαπλή επιλογή.
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;">
+        <button class="btn" style="flex:1;justify-content:center;" onclick="selectAllCalendars()">Select All</button>
+        <button class="btn" style="flex:1;justify-content:center;" onclick="clearCalendarSelection()">Clear</button>
+      </div>
+
+      <div class="sync-info">
+        <ul class="sync-bullets">
+          <li>Θα εμφανίζονται μόνο τα επιλεγμένα Google calendars</li>
+          <li>Τα δικά σου edits παραμένουν ανέπαφα</li>
+          <li>Το sync ενημερώνει μόνο date / title / location / description από Google</li>
+        </ul>
+      </div>
+
+      <div class="settings-section" style="margin-top:4px;">Import από παλιό app</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="file" id="csvImportInput" accept=".csv,text/csv" class="form-control">
+        <button class="btn btn-primary" onclick="importCSV()" style="white-space:nowrap;">Import CSV</button>
+      </div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px;">
+        Χρησιμοποίησε το αρχείο <strong>photosync_events_2026-03-31.csv</strong>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="syncNow()">🔄 Sync Now</button>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="closeModal('calModal')">Close</button>
+    </div>
+  </div>
+</div>
         <div class="modal-title" id="modalTitle">New Event</div>
         <div class="modal-sub" id="modalSub">Add a new wedding or event booking</div>
       </div>
@@ -625,31 +676,33 @@ let state = {
   ],
   theme: '',
   autoSync: false,
-  selectedCalendar: '',
+  selectedCalendars: [],
   googleToken: null,
   calendars: [],
   currentTab: 'events',
   currentChart: 'monthly',
-  sortCol: 'date',
-  sortDir: 1,
   currentEventId: null,
   chart: null,
 };
+
+let sortCol = 'date', sortDir = 1;
+let detailEventId = null;
 
 function save() {
   localStorage.setItem('ps_events', JSON.stringify(state.events));
   localStorage.setItem('ps_packages', JSON.stringify(state.packages));
   localStorage.setItem('ps_theme', state.theme);
   localStorage.setItem('ps_autoSync', state.autoSync);
-  localStorage.setItem('ps_selCal', state.selectedCalendar);
+  localStorage.setItem('ps_selCals', JSON.stringify(state.selectedCalendars));
   localStorage.setItem('ps_user', JSON.stringify(state.user));
 }
+
 function load() {
   try { state.events = JSON.parse(localStorage.getItem('ps_events')) || []; } catch(e){}
   try { state.packages = JSON.parse(localStorage.getItem('ps_packages')) || state.packages; } catch(e){}
   state.theme = localStorage.getItem('ps_theme') || '';
   state.autoSync = localStorage.getItem('ps_autoSync') === 'true';
-  state.selectedCalendar = localStorage.getItem('ps_selCal') || '';
+  try { state.selectedCalendars = JSON.parse(localStorage.getItem('ps_selCals')) || []; } catch(e){}
   try { state.user = JSON.parse(localStorage.getItem('ps_user')); } catch(e){}
 }
 
@@ -738,7 +791,7 @@ async function fetchCalendars() {
         localStorage.removeItem('ps_gtoken');
         state.googleToken = null;
         state.calendars = [];
-        state.selectedCalendar = '';
+        state.selectedCalendars = [];
         save();
         updateCalendarConnectionUI(false);
         showToast('Google session expired. Please sign in again.');
@@ -753,22 +806,21 @@ async function fetchCalendars() {
 
     const sel = document.getElementById('calSelect');
     if (sel) {
-      sel.innerHTML = '<option value="">-- Select a calendar --</option>';
-
+      sel.innerHTML = '';
       state.calendars.forEach(c => {
         const o = document.createElement('option');
         o.value = c.id;
         o.textContent = c.summary || c.id;
-        if (c.id === state.selectedCalendar) o.selected = true;
+        if (state.selectedCalendars.includes(c.id)) o.selected = true;
         sel.appendChild(o);
       });
 
-      if (state.selectedCalendar && state.calendars.some(c => c.id === state.selectedCalendar)) {
-        sel.value = state.selectedCalendar;
-      } else if (state.calendars.length) {
+      if (!state.selectedCalendars.length && state.calendars.length) {
         const primary = state.calendars.find(c => c.primary) || state.calendars[0];
-        state.selectedCalendar = primary.id;
-        sel.value = primary.id;
+        state.selectedCalendars = [primary.id];
+        for (const opt of sel.options) {
+          opt.selected = state.selectedCalendars.includes(opt.value);
+        }
         save();
       }
     }
@@ -803,8 +855,8 @@ async function fetchCalendarEvents(calId) {
 function getVisibleEvents() {
   return state.events.filter(e => {
     if (!e.importedFromGoogle) return true;
-    if (!state.selectedCalendar) return false;
-    return e.sourceCalendarId === state.selectedCalendar;
+    if (!state.selectedCalendars.length) return false;
+    return state.selectedCalendars.includes(e.sourceCalendarId);
   });
 }
 
@@ -826,62 +878,61 @@ async function syncCalendar() {
       await fetchCalendars();
     }
 
-    const calSelect = document.getElementById('calSelect');
-    const calId = (calSelect?.value || state.selectedCalendar || '').trim();
-
-    if (!calId) {
-      showToast('Επίλεξε πρώτα ημερολόγιο.');
+    const selected = [...state.selectedCalendars];
+    if (!selected.length) {
+      showToast('Επίλεξε τουλάχιστον ένα ημερολόγιο.');
       openCalSettings();
       return;
     }
 
-    state.selectedCalendar = calId;
-
-    const items = await fetchCalendarEvents(calId);
     let added = 0;
     let updated = 0;
 
-    items.forEach(ev => {
-      const googleEventId = ev.id;
-      const dateStr = ev.start?.date || ev.start?.dateTime?.slice(0, 10) || '';
+    for (const calId of selected) {
+      const items = await fetchCalendarEvents(calId);
 
-      const existing = state.events.find(e =>
-        e.importedFromGoogle === true &&
-        e.sourceCalendarId === calId &&
-        e.calId === googleEventId
-      );
+      items.forEach(ev => {
+        const googleEventId = ev.id;
+        const dateStr = ev.start?.date || ev.start?.dateTime?.slice(0, 10) || '';
 
-      if (existing) {
-        existing.date = dateStr;
-        existing.name = ev.summary || existing.name || 'Untitled';
-        existing.location = ev.location || existing.location || '';
-        existing.info = ev.description || existing.info || '';
-        updated++;
-      } else {
-        state.events.push({
-          id: Date.now() + Math.random(),
-          calId: googleEventId,
-          date: dateStr,
-          name: ev.summary || 'Untitled',
-          location: ev.location || '',
-          info: ev.description || '',
-          status: 'Unbooked',
-          package: '',
-          video: false,
-          photoPrice: 0,
-          videoPrice: 0,
-          offerPrice: 0,
-          costs: 0,
-          clearIncome: 0,
-          deposit: false,
-          depositAmount: 0,
-          offers: '',
-          importedFromGoogle: true,
-          sourceCalendarId: calId,
-        });
-        added++;
-      }
-    });
+        const existing = state.events.find(e =>
+          e.importedFromGoogle === true &&
+          e.sourceCalendarId === calId &&
+          e.calId === googleEventId
+        );
+
+        if (existing) {
+          existing.date = dateStr;
+          existing.name = ev.summary || existing.name || 'Untitled';
+          existing.location = ev.location || existing.location || '';
+          existing.info = ev.description || existing.info || '';
+          updated++;
+        } else {
+          state.events.push({
+            id: Date.now() + Math.random(),
+            calId: googleEventId,
+            date: dateStr,
+            name: ev.summary || 'Untitled',
+            location: ev.location || '',
+            info: ev.description || '',
+            status: 'Unbooked',
+            package: '',
+            video: false,
+            photoPrice: 0,
+            videoPrice: 0,
+            offerPrice: 0,
+            costs: 0,
+            clearIncome: 0,
+            deposit: false,
+            depositAmount: 0,
+            offers: '',
+            importedFromGoogle: true,
+            sourceCalendarId: calId,
+          });
+          added++;
+        }
+      });
+    }
 
     save();
     renderAll();
@@ -900,16 +951,181 @@ async function syncNow() {
   await syncCalendar();
 }
 
+function selectAllCalendars() {
+  const sel = document.getElementById('calSelect');
+  if (!sel) return;
+  for (const opt of sel.options) opt.selected = true;
+  state.selectedCalendars = [...sel.options].map(o => o.value);
+  save();
+  renderAll();
+}
+
+function clearCalendarSelection() {
+  const sel = document.getElementById('calSelect');
+  if (!sel) return;
+  for (const opt of sel.options) opt.selected = false;
+  state.selectedCalendars = [];
+  save();
+  renderAll();
+}
+
+function importCSV() {
+  const input = document.getElementById('csvImportInput');
+  const file = input?.files?.[0];
+  if (!file) {
+    showToast('Επίλεξε πρώτα CSV αρχείο.');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const text = String(reader.result || '');
+      const rows = parseCSV(text);
+      if (!rows.length) {
+        showToast('Το CSV είναι άδειο.');
+        return;
+      }
+
+      const headers = rows[0];
+      const body = rows.slice(1);
+      let added = 0;
+      let updated = 0;
+
+      for (const row of body) {
+        if (!row.some(v => String(v).trim() !== '')) continue;
+
+        const obj = {};
+        headers.forEach((h, i) => obj[h] = row[i] ?? '');
+
+        const calId = cleanValue(obj['Google Calendar ID']);
+        const existing = state.events.find(e => calId && e.calId === calId);
+
+        const mapped = {
+          id: existing?.id || (Date.now() + Math.random()),
+          calId: calId || '',
+          date: cleanValue(obj['Date']),
+          name: cleanValue(obj['Name']) || 'Unnamed Event',
+          video: yesNoToBool(obj['Has Video']),
+          info: cleanValue(obj['Info']),
+          package: cleanValue(obj['Package']),
+          location: cleanValue(obj['Location']),
+          deposit: yesNoToBool(obj['Deposit']),
+          depositAmount: toNum(obj['Deposit Amount (EUR)']),
+          offers: cleanValue(obj['Attached Offers']),
+          photoPrice: toNum(obj['Photo Price (EUR)']),
+          videoPrice: toNum(obj['Video Price (EUR)']),
+          offerPrice: toNum(obj['Offer Price (EUR)']),
+          costs: toNum(obj['Costs (EUR)']),
+          clearIncome: toNum(obj['Clear Income (EUR)']),
+          status: normalizeStatus(cleanValue(obj['Status'])),
+          importedFromGoogle: existing?.importedFromGoogle || false,
+          sourceCalendarId: existing?.sourceCalendarId || ''
+        };
+
+        if (existing) {
+          existing.date = mapped.date || existing.date;
+          existing.name = mapped.name || existing.name;
+          existing.video = mapped.video;
+          existing.info = mapped.info;
+          existing.package = mapped.package;
+          existing.location = mapped.location;
+          existing.deposit = mapped.deposit;
+          existing.depositAmount = mapped.depositAmount;
+          existing.offers = mapped.offers;
+          existing.photoPrice = mapped.photoPrice;
+          existing.videoPrice = mapped.videoPrice;
+          existing.offerPrice = mapped.offerPrice;
+          existing.costs = mapped.costs;
+          existing.clearIncome = mapped.clearIncome;
+          existing.status = mapped.status;
+          updated++;
+        } else {
+          state.events.push(mapped);
+          added++;
+        }
+      }
+
+      save();
+      renderAll();
+      input.value = '';
+      showToast(`✅ CSV import ολοκληρώθηκε. Νέα: ${added}, ενημερωμένα: ${updated}`);
+    } catch (e) {
+      console.error(e);
+      showToast('Σφάλμα στο CSV import.');
+    }
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let cur = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const next = text[i + 1];
+
+    if (ch === '"') {
+      if (inQuotes && next === '"') {
+        cur += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === ',' && !inQuotes) {
+      row.push(cur);
+      cur = '';
+    } else if ((ch === '\n' || ch === '\r') && !inQuotes) {
+      if (ch === '\r' && next === '\n') i++;
+      row.push(cur);
+      rows.push(row);
+      row = [];
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+
+  if (cur.length || row.length) {
+    row.push(cur);
+    rows.push(row);
+  }
+
+  return rows;
+}
+
+function cleanValue(v) {
+  const s = String(v ?? '').trim();
+  return s === 'nan' ? '' : s;
+}
+function toNum(v) {
+  const s = cleanValue(v).replace(',', '.');
+  const n = parseFloat(s);
+  return Number.isFinite(n) ? n : 0;
+}
+function yesNoToBool(v) {
+  return ['yes', 'true', '1', 'ναι'].includes(cleanValue(v).toLowerCase());
+}
+function normalizeStatus(v) {
+  const s = cleanValue(v).toLowerCase();
+  if (s === 'completed' || s === 'complete') return 'Completed';
+  if (s === 'booked' || s === 'booking') return 'Booked';
+  return 'Unbooked';
+}
+
 function demoMode() {
   state.user = { name: 'Konstantinos Gkekopoulos', email: 'gkekon@gmail.com', initial: 'K' };
   state.googleToken = null;
   state.calendars = [];
-  state.selectedCalendar = '';
+  state.selectedCalendars = [];
 
   if (state.events.length === 0) {
     state.events = [
-      { id:1, calId:'demo1', date:'2026-01-17', name:'Γάμος Ροδούλα & Αντώνης', location:'', info:'', status:'Completed', package:'Silver Photography Package', video:true, photoPrice:950, videoPrice:0, offerPrice:1200, costs:250, clearIncome:950, deposit:true, depositAmount:300, offers:'', importedFromGoogle:false },
-      { id:2, calId:'demo2', date:'2026-05-09', name:'Xristina Moutsi Gamobaptisi', location:'', info:'', status:'Booked', package:'', video:true, photoPrice:1000, videoPrice:0, offerPrice:1300, costs:300, clearIncome:1000, deposit:true, depositAmount:200, offers:'', importedFromGoogle:false }
+      { id:1, calId:'demo1', date:'2026-01-17', name:'Γάμος Ροδούλα & Αντώνης', location:'', info:'', status:'Completed', package:'Silver Photography Package', video:true, photoPrice:950, videoPrice:0, offerPrice:1200, costs:250, clearIncome:950, deposit:true, depositAmount:300, offers:'', importedFromGoogle:false, sourceCalendarId:'' },
+      { id:2, calId:'demo2', date:'2026-05-09', name:'Xristina Moutsi Gamobaptisi', location:'', info:'', status:'Booked', package:'', video:true, photoPrice:1000, videoPrice:0, offerPrice:1300, costs:300, clearIncome:1000, deposit:true, depositAmount:200, offers:'', importedFromGoogle:false, sourceCalendarId:'' }
     ];
   }
 
@@ -938,12 +1154,7 @@ function showApp() {
 
   updateCalendarConnectionUI(!!state.googleToken && state.calendars.length > 0);
 
-  if (state.googleToken && state.selectedCalendar) {
-    const sel = document.getElementById('calSelect');
-    if (sel) sel.value = state.selectedCalendar;
-  }
-
-  if (state.autoSync && state.googleToken && state.selectedCalendar) {
+  if (state.autoSync && state.googleToken && state.selectedCalendars.length) {
     syncCalendar();
   }
 }
@@ -1001,23 +1212,15 @@ function renderStats() {
   const year = new Date().getFullYear();
   const month = new Date().getMonth();
   const bookedEvents = visibleEvents.filter(e => e.status !== 'Unbooked');
-  const yearlyIncome = bookedEvents
-    .filter(e => new Date(e.date).getFullYear() === year)
-    .reduce((s, e) => s + (e.clearIncome || 0), 0);
-
-  const monthlyIncome = bookedEvents
-    .filter(e => {
-      const d = new Date(e.date);
-      return d.getFullYear() === year && d.getMonth() === month;
-    })
-    .reduce((s, e) => s + (e.clearIncome || 0), 0);
+  const yearlyIncome = bookedEvents.filter(e => new Date(e.date).getFullYear() === year).reduce((s, e) => s + (e.clearIncome || 0), 0);
+  const monthlyIncome = bookedEvents.filter(e => {
+    const d = new Date(e.date);
+    return d.getFullYear() === year && d.getMonth() === month;
+  }).reduce((s, e) => s + (e.clearIncome || 0), 0);
 
   const pendingDeposits = visibleEvents.filter(e => !e.deposit && e.status !== 'Unbooked').length;
   const today = new Date().toISOString().slice(0, 10);
-  const upcoming = visibleEvents
-    .filter(e => e.date >= today && e.status !== 'Completed')
-    .sort((a, b) => a.date.localeCompare(b.date));
-
+  const upcoming = visibleEvents.filter(e => e.date >= today && e.status !== 'Completed').sort((a, b) => a.date.localeCompare(b.date));
   const next = upcoming[0];
 
   document.getElementById('statYearly').textContent = fmt(yearlyIncome);
@@ -1046,13 +1249,9 @@ function renderPackagesBar() {
   bar.appendChild(add);
 }
 
-let sortCol = 'date', sortDir = 1;
 function sortTable(col) {
   if (sortCol === col) sortDir *= -1;
-  else {
-    sortCol = col;
-    sortDir = 1;
-  }
+  else { sortCol = col; sortDir = 1; }
 
   document.querySelectorAll('.sort-arrow').forEach(el => {
     el.classList.remove('active');
@@ -1075,9 +1274,7 @@ function renderTable() {
   const sorted = [...visibleEvents].sort((a, b) => {
     let va = a[sortCol] ?? '';
     let vb = b[sortCol] ?? '';
-    if (typeof va === 'number' && typeof vb === 'number') {
-      return (va - vb) * sortDir;
-    }
+    if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * sortDir;
     return String(va).localeCompare(String(vb)) * sortDir;
   });
 
@@ -1086,16 +1283,10 @@ function renderTable() {
 
   document.getElementById('totalBadge').textContent = total + ' event' + (total !== 1 ? 's' : '');
   const ub = document.getElementById('unbookedBadge');
-
-  if (unbooked) {
-    ub.style.display = '';
-    ub.textContent = unbooked + ' unbooked';
-  } else {
-    ub.style.display = 'none';
-  }
+  if (unbooked) { ub.style.display = ''; ub.textContent = unbooked + ' unbooked'; }
+  else ub.style.display = 'none';
 
   tbody.innerHTML = '';
-
   sorted.forEach(ev => {
     const tr = document.createElement('tr');
     tr.onclick = () => openDetail(ev.id);
@@ -1147,19 +1338,16 @@ function renderChart() {
 
   if (state.currentChart === 'monthly') {
     document.getElementById('chartTitle').textContent = 'Monthly Income (' + new Date().getFullYear() + ')';
-
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const year = new Date().getFullYear();
     const incomeByMonth = Array(12).fill(0);
     const countByMonth = Array(12).fill(0);
 
-    getVisibleEvents()
-      .filter(e => e.status !== 'Unbooked' && new Date(e.date).getFullYear() === year)
-      .forEach(e => {
-        const m = new Date(e.date).getMonth();
-        incomeByMonth[m] += e.clearIncome || 0;
-        countByMonth[m]++;
-      });
+    getVisibleEvents().filter(e => e.status !== 'Unbooked' && new Date(e.date).getFullYear() === year).forEach(e => {
+      const m = new Date(e.date).getMonth();
+      incomeByMonth[m] += e.clearIncome || 0;
+      countByMonth[m]++;
+    });
 
     state.chart = new Chart(canvas, {
       type: 'bar',
@@ -1206,7 +1394,6 @@ function renderChart() {
     });
   } else {
     document.getElementById('chartTitle').textContent = 'Revenue by Package';
-
     const pkgMap = {};
     getVisibleEvents().filter(e => e.status !== 'Unbooked').forEach(e => {
       const k = e.package || 'No Package';
@@ -1365,7 +1552,6 @@ function calcIncome() {
 
 function saveEvent() {
   const id = state.currentEventId;
-
   const existing = id ? state.events.find(e => e.id === id) : null;
   const importedFromGoogle = existing?.importedFromGoogle === true;
   const sourceCalendarId = existing?.sourceCalendarId || '';
@@ -1405,7 +1591,6 @@ function saveEvent() {
   showToast(id ? '✅ Event updated.' : '✅ Event created.');
 }
 
-let detailEventId = null;
 function openDetail(id) {
   const ev = state.events.find(e => e.id === id);
   if (!ev) return;
@@ -1457,7 +1642,6 @@ function deleteFromDetail() {
 function renderPkgList() {
   const list = document.getElementById('pkgList');
   list.innerHTML = '';
-
   state.packages.forEach((p, i) => {
     const row = document.createElement('div');
     row.className = 'pkg-row';
@@ -1469,14 +1653,8 @@ function renderPkgList() {
     list.appendChild(row);
   });
 }
-function addPkgRow() {
-  state.packages.push({ name: 'New Package', price: 0 });
-  renderPkgList();
-}
-function deletePkg(i) {
-  state.packages.splice(i, 1);
-  renderPkgList();
-}
+function addPkgRow() { state.packages.push({ name: 'New Package', price: 0 }); renderPkgList(); }
+function deletePkg(i) { state.packages.splice(i, 1); renderPkgList(); }
 function savePackages() {
   state.packages = state.packages.map((_, i) => ({
     name: document.getElementById('pname' + i).value,
@@ -1493,20 +1671,9 @@ function saveAutoSync() {
   save();
 }
 
-function toggleUserMenu() {
-  const d = document.getElementById('userDropdown');
-  d.style.display = d.style.display === 'none' ? '' : 'none';
-}
-document.addEventListener('click', e => {
-  const d = document.getElementById('userDropdown');
-  if (d && !d.contains(e.target) && !e.target.closest('.user-menu-trigger')) {
-    d.style.display = 'none';
-  }
-});
-
 document.addEventListener('change', e => {
   if (e.target && e.target.id === 'calSelect') {
-    state.selectedCalendar = e.target.value || '';
+    state.selectedCalendars = [...e.target.selectedOptions].map(o => o.value);
     save();
     renderAll();
   }
@@ -1514,7 +1681,6 @@ document.addEventListener('change', e => {
 
 function exportCSV(type) {
   let csv, filename;
-
   if (type === 'events') {
     const headers = ['Date','Name','Status','Video','Package','Location','Photo Price','Video Price','Offer Price','Costs','Clear Income','Deposit','Deposit Amount','Offers','Info','Calendar ID','Imported From Google','Source Calendar'];
     const rows = state.events.map(e => [
@@ -1565,10 +1731,10 @@ function signOut() {
   state.user = null;
   state.googleToken = null;
   state.calendars = [];
-  state.selectedCalendar = '';
+  state.selectedCalendars = [];
   localStorage.removeItem('ps_user');
   localStorage.removeItem('ps_gtoken');
-  localStorage.removeItem('ps_selCal');
+  localStorage.removeItem('ps_selCals');
   document.getElementById('app').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
   updateCalendarConnectionUI(false);
@@ -1590,9 +1756,7 @@ function escapeHtml(str) {
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
 }
-function escapeAttr(str) {
-  return escapeHtml(str);
-}
+function escapeAttr(str) { return escapeHtml(str); }
 
 async function initApp() {
   load();
@@ -1604,7 +1768,7 @@ async function initApp() {
       await fetchGoogleProfile();
       showApp();
       await fetchCalendars();
-      if (state.autoSync && state.selectedCalendar) {
+      if (state.autoSync && state.selectedCalendars.length) {
         await syncCalendar();
       }
       return;
@@ -1617,7 +1781,7 @@ async function initApp() {
         state.googleToken = storedToken;
         try {
           await fetchCalendars();
-          if (state.autoSync && state.selectedCalendar) {
+          if (state.autoSync && state.selectedCalendars.length) {
             await syncCalendar();
           }
         } catch (e) {
