@@ -244,125 +244,318 @@ textarea.form-control { resize: vertical; min-height: 70px; }
 </div>
 
 <div id="app" style="display:none;">
-<nav>
-  <div class="nav-logo">
-    <div class="logo-icon">📷</div>
-    <span>PhotoSync</span>
-  </div>
-  <div class="nav-actions">
-    <button class="btn" onclick="syncCalendar()" id="syncBtn">
-      <span id="syncIcon">🔄</span>
-      <span>Sync Calendar</span>
-    </button>
-    <button class="btn btn-primary" onclick="openAddEvent()">
-      <span>+</span>
-      <span>Add Event</span>
-    </button>
-    <button class="btn btn-icon" onclick="openSettings()" title="Settings">⚙️</button>
-    <div class="user-menu-trigger" onclick="toggleUserMenu()" style="position:relative;">
-      <div class="avatar" id="userAvatar">K</div>
-      <div class="chevron">▼</div>
-      <div class="dropdown" id="userDropdown" style="display:none;" onclick="event.stopPropagation()">
-        <div class="dropdown-user">
-          <div class="dropdown-user-name" id="dropdownName">User</div>
-          <div class="dropdown-user-email" id="dropdownEmail">[email protected]</div>
-        </div>
-        <button class="dropdown-item" onclick="openSettings();toggleUserMenu()">⚙️ Settings</button>
-        <button class="dropdown-item" onclick="openCalSettings();toggleUserMenu()">📅 Calendar Settings</button>
-        <button class="dropdown-item" onclick="openPkgManager();toggleUserMenu()">📦 Manage Packages</button>
-        <div class="dropdown-divider"></div>
-        <button class="dropdown-item" onclick="exportCSV('events');toggleUserMenu()">📋 Export Events (CSV)</button>
-        <button class="dropdown-item" onclick="exportCSV('summary');toggleUserMenu()">⬇️ Export Summary (CSV)</button>
-        <div class="dropdown-divider"></div>
-        <button class="dropdown-item danger" onclick="signOut()">↪ Sign Out</button>
-      </div>
+  <nav>
+    <div class="nav-logo">
+      <div class="logo-icon">📷</div>
+      <span>PhotoSync</span>
     </div>
-  </div>
-</nav>
+    <div class="nav-actions">
+      <button class="btn" onclick="syncCalendar()" id="syncBtn">
+        <span id="syncIcon">🔄</span>
+        <span>Sync Calendar</span>
+      </button>
+      <button class="btn btn-primary" onclick="openAddEvent()">
+        <span>+</span>
+        <span>Add Event</span>
+      </button>
+      <button class="btn btn-icon" onclick="openSettings()" title="Settings">⚙️</button>
 
-<main>
-  <div class="stat-grid">
-    <div class="stat-card">
-      <div class="stat-label">📈 Yearly Income</div>
-      <div class="stat-value" id="statYearly">0,00 €</div>
-      <div class="stat-sub" id="statYearlySub">0 booked events</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">€ Monthly Income</div>
-      <div class="stat-value" id="statMonthly">0,00 €</div>
-      <div class="stat-sub" id="statMonthlySub">This month</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">⏰ Pending Deposits</div>
-      <div class="stat-value" id="statDeposits">0</div>
-      <div class="stat-sub">Events without deposit</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">📅 Next Event</div>
-      <div class="next-event-name" id="statNextName">—</div>
-      <div class="next-event-date" id="statNextDate">No upcoming events</div>
-    </div>
-  </div>
+      <div class="user-menu-trigger" onclick="toggleUserMenu()" style="position:relative;">
+        <div class="avatar" id="userAvatar">K</div>
+        <div class="chevron">▼</div>
 
-  <div class="packages-bar" id="packagesBar">
-    <span class="pkg-label">Packages:</span>
-  </div>
-
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('events')" id="tabEvents">🗓 Events</button>
-    <button class="tab" onclick="switchTab('analytics')" id="tabAnalytics">📊 Analytics</button>
-  </div>
-
-  <div id="eventsPanel">
-    <div class="table-panel">
-      <div class="table-header">
-        <div class="table-title">Events &amp; Bookings</div>
-        <div class="table-badges">
-          <span class="badge badge-default" id="totalBadge">0 events</span>
-          <span class="badge badge-orange" id="unbookedBadge" style="display:none;"></span>
+        <div class="dropdown" id="userDropdown" style="display:none;" onclick="event.stopPropagation()">
+          <div class="dropdown-user">
+            <div class="dropdown-user-name" id="dropdownName">User</div>
+            <div class="dropdown-user-email" id="dropdownEmail">[email protected]</div>
+          </div>
+          <button class="dropdown-item" onclick="openSettings();hideUserMenu()">⚙️ Settings</button>
+          <button class="dropdown-item" onclick="openCalSettings();hideUserMenu()">📅 Calendar Settings</button>
+          <button class="dropdown-item" onclick="openPkgManager();hideUserMenu()">📦 Manage Packages</button>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item" onclick="exportCSV('events');hideUserMenu()">📋 Export Events (CSV)</button>
+          <button class="dropdown-item" onclick="exportCSV('summary');hideUserMenu()">⬇️ Export Summary (CSV)</button>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item danger" onclick="signOut()">↪ Sign Out</button>
         </div>
       </div>
-      <div class="table-wrap">
-        <table id="eventsTable">
-          <thead>
-            <tr>
-              <th onclick="sortTable('date')">Date <span class="sort-arrow" id="sort-date">↕</span></th>
-              <th onclick="sortTable('name')">Name <span class="sort-arrow" id="sort-name">↕</span></th>
-              <th>📷</th>
-              <th onclick="sortTable('package')">Package <span class="sort-arrow" id="sort-package">↕</span></th>
-              <th onclick="sortTable('location')">Location <span class="sort-arrow" id="sort-location">↕</span></th>
-              <th onclick="sortTable('deposit')">Deposit <span class="sort-arrow" id="sort-deposit">↕</span></th>
-              <th onclick="sortTable('offerPrice')">Offer Price <span class="sort-arrow" id="sort-offerPrice">↕</span></th>
-              <th onclick="sortTable('clearIncome')">Income <span class="sort-arrow" id="sort-clearIncome">↕</span></th>
-              <th onclick="sortTable('status')">Status <span class="sort-arrow" id="sort-status">↕</span></th>
-            </tr>
-          </thead>
-          <tbody id="eventsBody"></tbody>
-        </table>
-      </div>
     </div>
-  </div>
+  </nav>
 
-  <div id="analyticsPanel" class="analytics-panel">
-    <div class="analytics-stats">
-      <div class="a-card"><div class="a-label">Total Revenue</div><div class="a-value" id="aRevenue" style="color:var(--accent)">0 €</div></div>
-      <div class="a-card"><div class="a-label">Total Costs</div><div class="a-value" id="aCosts">0 €</div></div>
-      <div class="a-card"><div class="a-label">Profit Margin</div><div class="a-value green" id="aMargin">0%</div></div>
-      <div class="a-card"><div class="a-label">Deposits Received</div><div class="a-value" id="aDeposits">0 €</div></div>
-    </div>
-    <div class="chart-tabs">
-      <button class="chart-tab active" onclick="switchChart('monthly')" id="ctMonthly">📊 Monthly Income</button>
-      <button class="chart-tab" onclick="switchChart('status')" id="ctStatus">⏰ Event Status</button>
-      <button class="chart-tab" onclick="switchChart('packages')" id="ctPackages">📈 Packages</button>
-    </div>
-    <div class="chart-container">
-      <div class="chart-title" id="chartTitle">Monthly Income (2026)</div>
-      <div class="chart-canvas-wrap">
-        <canvas id="mainChart"></canvas>
+  <main>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">📈 Yearly Income</div>
+        <div class="stat-value" id="statYearly">0,00 €</div>
+        <div class="stat-sub" id="statYearlySub">0 booked events</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">€ Monthly Income</div>
+        <div class="stat-value" id="statMonthly">0,00 €</div>
+        <div class="stat-sub" id="statMonthlySub">This month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">⏰ Pending Deposits</div>
+        <div class="stat-value" id="statDeposits">0</div>
+        <div class="stat-sub">Events without deposit</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">📅 Next Event</div>
+        <div class="next-event-name" id="statNextName">—</div>
+        <div class="next-event-date" id="statNextDate">No upcoming events</div>
       </div>
     </div>
+
+    <div class="packages-bar" id="packagesBar">
+      <span class="pkg-label">Packages:</span>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('events')" id="tabEvents">🗓 Events</button>
+      <button class="tab" onclick="switchTab('analytics')" id="tabAnalytics">📊 Analytics</button>
+    </div>
+
+    <div id="eventsPanel">
+      <div class="table-panel">
+        <div class="table-header">
+          <div class="table-title">Events &amp; Bookings</div>
+          <div class="table-badges">
+            <span class="badge badge-default" id="totalBadge">0 events</span>
+            <span class="badge badge-orange" id="unbookedBadge" style="display:none;"></span>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="eventsTable">
+            <thead>
+              <tr>
+                <th onclick="sortTable('date')">Date <span class="sort-arrow" id="sort-date">↕</span></th>
+                <th onclick="sortTable('name')">Name <span class="sort-arrow" id="sort-name">↕</span></th>
+                <th>📷</th>
+                <th onclick="sortTable('package')">Package <span class="sort-arrow" id="sort-package">↕</span></th>
+                <th onclick="sortTable('location')">Location <span class="sort-arrow" id="sort-location">↕</span></th>
+                <th onclick="sortTable('deposit')">Deposit <span class="sort-arrow" id="sort-deposit">↕</span></th>
+                <th onclick="sortTable('offerPrice')">Offer Price <span class="sort-arrow" id="sort-offerPrice">↕</span></th>
+                <th onclick="sortTable('clearIncome')">Income <span class="sort-arrow" id="sort-clearIncome">↕</span></th>
+                <th onclick="sortTable('status')">Status <span class="sort-arrow" id="sort-status">↕</span></th>
+              </tr>
+            </thead>
+            <tbody id="eventsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="analyticsPanel" class="analytics-panel">
+      <div class="analytics-stats">
+        <div class="a-card"><div class="a-label">Total Revenue</div><div class="a-value" id="aRevenue" style="color:var(--accent)">0 €</div></div>
+        <div class="a-card"><div class="a-label">Total Costs</div><div class="a-value" id="aCosts">0 €</div></div>
+        <div class="a-card"><div class="a-label">Profit Margin</div><div class="a-value green" id="aMargin">0%</div></div>
+        <div class="a-card"><div class="a-label">Deposits Received</div><div class="a-value" id="aDeposits">0 €</div></div>
+      </div>
+
+      <div class="chart-tabs">
+        <button class="chart-tab active" onclick="switchChart('monthly')" id="ctMonthly">📊 Monthly Income</button>
+        <button class="chart-tab" onclick="switchChart('status')" id="ctStatus">⏰ Event Status</button>
+        <button class="chart-tab" onclick="switchChart('packages')" id="ctPackages">📈 Packages</button>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title" id="chartTitle">Monthly Income (2026)</div>
+        <div class="chart-canvas-wrap">
+          <canvas id="mainChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="overlay" id="eventModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="modalTitle">New Event</div>
+        <div class="modal-sub" id="modalSub">Add a new wedding or event booking</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('eventModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" class="form-control" id="fDate">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select class="form-control" id="fStatus">
+            <option value="Unbooked">Unbooked</option>
+            <option value="Booked">Booked</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Event Name</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="text" class="form-control" id="fName" placeholder="Wedding of John & Jane" style="flex:1;">
+          <div class="form-toggle" style="padding:6px 10px;gap:6px;flex-shrink:0;">
+            <span style="font-size:12px;">Video</span>
+            <label class="toggle"><input type="checkbox" id="fVideo"><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Location</label>
+        <input type="text" class="form-control" id="fLocation" placeholder="Venue name or address">
+      </div>
+
+      <div class="form-group">
+        <label>Additional Info</label>
+        <textarea class="form-control" id="fInfo" placeholder="Notes about the event..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Package</label>
+        <select class="form-control" id="fPackage" onchange="onPackageChange()"></select>
+      </div>
+
+      <div style="font-weight:600;font-size:13px;">Pricing (EUR)</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Photo Price</label>
+          <input type="number" class="form-control" id="fPhotoPrice" value="0" oninput="calcIncome()">
+        </div>
+        <div class="form-group">
+          <label>Video Price</label>
+          <input type="number" class="form-control" id="fVideoPrice" value="0" oninput="calcIncome()">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Total Offer Price</label>
+          <input type="number" class="form-control" id="fOfferPrice" value="0" oninput="calcIncome()">
+        </div>
+        <div class="form-group">
+          <label>Costs</label>
+          <input type="number" class="form-control" id="fCosts" value="0" oninput="calcIncome()">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Deposit Amount (€)</label>
+        <input type="number" class="form-control" id="fDepositAmount" value="0">
+      </div>
+
+      <div class="income-preview">
+        <span class="income-preview-label">Clear Income</span>
+        <span class="income-preview-value" id="incomePreview">0,00 €</span>
+      </div>
+
+      <div class="form-toggle">
+        <span class="toggle-label">Deposit Received</span>
+        <label class="toggle"><input type="checkbox" id="fDeposit"><span class="toggle-slider"></span></label>
+      </div>
+
+      <div class="form-group">
+        <label>Attached Offers</label>
+        <input type="text" class="form-control" id="fOffers" placeholder="e.g., Photo album, Drone footage...">
+      </div>
+
+      <input type="hidden" id="fCalId">
+      <input type="hidden" id="fEventId">
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('eventModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEvent()" id="saveEventBtn">Create Event</button>
+    </div>
   </div>
-</main>
+</div>
+
+<div class="overlay" id="settingsModal">
+  <div class="modal settings-modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title">Settings</div>
+        <div class="modal-sub">Customize your dashboard appearance and preferences</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="tabs" style="width:100%;">
+        <button class="tab active" onclick="switchSettingsTab('appearance')" id="stAppearance" style="flex:1;justify-content:center;">🎨 Appearance</button>
+        <button class="tab" onclick="switchSettingsTab('sync')" id="stSync" style="flex:1;justify-content:center;">🔄 Sync</button>
+      </div>
+
+      <div id="appearanceTab">
+        <div class="settings-section">Dark Themes</div>
+        <div class="theme-grid" style="margin-bottom:16px;">
+          <div class="theme-option" onclick="setTheme('')" id="thSapphire">
+            <div class="theme-preview" style="background:#2eaadc;"></div>
+            <div class="theme-name">Sapphire Night</div>
+          </div>
+          <div class="theme-option" onclick="setTheme('amethyst')" id="thAmethyst">
+            <div class="theme-preview" style="background:#a855f7;"></div>
+            <div class="theme-name">Amethyst Void</div>
+          </div>
+          <div class="theme-option" onclick="setTheme('emerald')" id="thEmerald">
+            <div class="theme-preview" style="background:#10b981;"></div>
+            <div class="theme-name">Emerald Deep</div>
+          </div>
+        </div>
+
+        <div class="settings-section">Light Themes</div>
+        <div class="theme-grid" style="margin-bottom:16px;">
+          <div class="theme-option" onclick="setTheme('cerulean')" id="thCerulean">
+            <div class="theme-preview" style="background:#3b82f6;"></div>
+            <div class="theme-name">Cerulean Mist</div>
+          </div>
+          <div class="theme-option" onclick="setTheme('lavender')" id="thLavender">
+            <div class="theme-preview" style="background:#7c3aed;"></div>
+            <div class="theme-name">Lavender Haze</div>
+          </div>
+          <div class="theme-option" onclick="setTheme('sage')" id="thSage">
+            <div class="theme-preview" style="background:#16a34a;"></div>
+            <div class="theme-name">Sage Morning</div>
+          </div>
+        </div>
+
+        <div class="settings-section">Custom Background</div>
+        <div class="custom-color-wrap">
+          <input type="color" id="customBgColor" value="#0d1117" oninput="setCustomBg(this.value)">
+          <span style="font-size:13px;color:var(--text2);">Pick a custom background color</span>
+          <button class="btn" style="margin-left:auto;font-size:12px;" onclick="clearCustomBg()">Reset</button>
+        </div>
+      </div>
+
+      <div id="syncTab" style="display:none;flex-direction:column;gap:12px;">
+        <div class="form-toggle">
+          <div>
+            <div class="toggle-label">Auto-Sync on Login</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:2px;">Automatically sync with Google Calendar when you open the app</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="autoSyncToggle" onchange="saveAutoSync()"><span class="toggle-slider"></span></label>
+        </div>
+
+        <div class="sync-info">
+          <div class="sync-info-title">Sync Behavior</div>
+          <ul class="sync-bullets">
+            <li>New events from Google Calendar are added as "unbooked"</li>
+            <li>Existing events are never overwritten in your custom fields</li>
+            <li>Your pricing, deposits, and notes are always preserved</li>
+            <li>Only reads from Google Calendar (never writes to it)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="closeModal('settingsModal')">Close</button>
+    </div>
+  </div>
 </div>
 
 <div class="overlay" id="calModal">
@@ -374,6 +567,7 @@ textarea.form-control { resize: vertical; min-height: 70px; }
       </div>
       <button class="modal-close" onclick="closeModal('calModal')">✕</button>
     </div>
+
     <div class="modal-body">
       <div class="cal-status">
         <div class="cal-status-left">
@@ -399,7 +593,7 @@ textarea.form-control { resize: vertical; min-height: 70px; }
       <div class="sync-info">
         <ul class="sync-bullets">
           <li>Θα εμφανίζονται μόνο τα επιλεγμένα Google calendars</li>
-          <li>Τα δικά σου edits παραμένουν ανέπαφα</li>
+          <li>Τα edits σου παραμένουν ανέπαφα</li>
           <li>Το sync ενημερώνει μόνο date / title / location / description από Google</li>
         </ul>
       </div>
@@ -415,209 +609,7 @@ textarea.form-control { resize: vertical; min-height: 70px; }
 
       <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="syncNow()">🔄 Sync Now</button>
     </div>
-    <div class="modal-foot">
-      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="closeModal('calModal')">Close</button>
-    </div>
-  </div>
-</div>
-        <div class="modal-title" id="modalTitle">New Event</div>
-        <div class="modal-sub" id="modalSub">Add a new wedding or event booking</div>
-      </div>
-      <button class="modal-close" onclick="closeModal('eventModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Date</label>
-          <input type="date" class="form-control" id="fDate">
-        </div>
-        <div class="form-group">
-          <label>Status</label>
-          <select class="form-control" id="fStatus">
-            <option value="Unbooked">Unbooked</option>
-            <option value="Booked">Booked</option>
-            <option value="Completed">Completed</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Event Name</label>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <input type="text" class="form-control" id="fName" placeholder="Wedding of John & Jane" style="flex:1;">
-          <div class="form-toggle" style="padding:6px 10px;gap:6px;flex-shrink:0;">
-            <span style="font-size:12px;">Video</span>
-            <label class="toggle"><input type="checkbox" id="fVideo"><span class="toggle-slider"></span></label>
-          </div>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Location</label>
-        <input type="text" class="form-control" id="fLocation" placeholder="Venue name or address">
-      </div>
-      <div class="form-group">
-        <label>Additional Info</label>
-        <textarea class="form-control" id="fInfo" placeholder="Notes about the event..."></textarea>
-      </div>
-      <div class="form-group">
-        <label>Package</label>
-        <select class="form-control" id="fPackage" onchange="onPackageChange()"></select>
-      </div>
-      <div style="font-weight:600;font-size:13px;">Pricing (EUR)</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Photo Price</label>
-          <input type="number" class="form-control" id="fPhotoPrice" value="0" oninput="calcIncome()">
-        </div>
-        <div class="form-group">
-          <label>Video Price</label>
-          <input type="number" class="form-control" id="fVideoPrice" value="0" oninput="calcIncome()">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Total Offer Price</label>
-          <input type="number" class="form-control" id="fOfferPrice" value="0" oninput="calcIncome()">
-        </div>
-        <div class="form-group">
-          <label>Costs</label>
-          <input type="number" class="form-control" id="fCosts" value="0" oninput="calcIncome()">
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Deposit Amount (€)</label>
-        <input type="number" class="form-control" id="fDepositAmount" value="0" placeholder="0">
-      </div>
-      <div class="income-preview">
-        <span class="income-preview-label">Clear Income</span>
-        <span class="income-preview-value" id="incomePreview">0,00 €</span>
-      </div>
-      <div class="form-toggle">
-        <span class="toggle-label">Deposit Received</span>
-        <label class="toggle"><input type="checkbox" id="fDeposit"><span class="toggle-slider"></span></label>
-      </div>
-      <div class="form-group">
-        <label>Attached Offers</label>
-        <input type="text" class="form-control" id="fOffers" placeholder="e.g., Photo album, Drone footage...">
-      </div>
-      <input type="hidden" id="fCalId">
-      <input type="hidden" id="fEventId">
-    </div>
-    <div class="modal-foot">
-      <button class="btn" onclick="closeModal('eventModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveEvent()" id="saveEventBtn">Create Event</button>
-    </div>
-  </div>
-</div>
 
-<div class="overlay" id="settingsModal">
-  <div class="modal settings-modal">
-    <div class="modal-head">
-      <div>
-        <div class="modal-title">Settings</div>
-        <div class="modal-sub">Customize your dashboard appearance and preferences</div>
-      </div>
-      <button class="modal-close" onclick="closeModal('settingsModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="tabs" style="width:100%;">
-        <button class="tab active" onclick="switchSettingsTab('appearance')" id="stAppearance" style="flex:1;justify-content:center;">🎨 Appearance</button>
-        <button class="tab" onclick="switchSettingsTab('sync')" id="stSync" style="flex:1;justify-content:center;">🔄 Sync</button>
-      </div>
-      <div id="appearanceTab">
-        <div class="settings-section">Dark Themes</div>
-        <div class="theme-grid" style="margin-bottom:16px;">
-          <div class="theme-option" onclick="setTheme('')" id="thSapphire">
-            <div class="theme-preview" style="background:#2eaadc;"></div>
-            <div class="theme-name">Sapphire Night</div>
-          </div>
-          <div class="theme-option" onclick="setTheme('amethyst')" id="thAmethyst">
-            <div class="theme-preview" style="background:#a855f7;"></div>
-            <div class="theme-name">Amethyst Void</div>
-          </div>
-          <div class="theme-option" onclick="setTheme('emerald')" id="thEmerald">
-            <div class="theme-preview" style="background:#10b981;"></div>
-            <div class="theme-name">Emerald Deep</div>
-          </div>
-        </div>
-        <div class="settings-section">Light Themes</div>
-        <div class="theme-grid" style="margin-bottom:16px;">
-          <div class="theme-option" onclick="setTheme('cerulean')" id="thCerulean">
-            <div class="theme-preview" style="background:#3b82f6;"></div>
-            <div class="theme-name">Cerulean Mist</div>
-          </div>
-          <div class="theme-option" onclick="setTheme('lavender')" id="thLavender">
-            <div class="theme-preview" style="background:#7c3aed;"></div>
-            <div class="theme-name">Lavender Haze</div>
-          </div>
-          <div class="theme-option" onclick="setTheme('sage')" id="thSage">
-            <div class="theme-preview" style="background:#16a34a;"></div>
-            <div class="theme-name">Sage Morning</div>
-          </div>
-        </div>
-        <div class="settings-section">Custom Background</div>
-        <div class="custom-color-wrap">
-          <input type="color" id="customBgColor" value="#0d1117" oninput="setCustomBg(this.value)">
-          <span style="font-size:13px;color:var(--text2);">Pick a custom background color</span>
-          <button class="btn" style="margin-left:auto;font-size:12px;" onclick="clearCustomBg()">Reset</button>
-        </div>
-      </div>
-      <div id="syncTab" style="display:none;flex-direction:column;gap:12px;">
-        <div class="form-toggle">
-          <div>
-            <div class="toggle-label">Auto-Sync on Login</div>
-            <div style="font-size:11px;color:var(--text2);margin-top:2px;">Automatically sync with Google Calendar when you open the app</div>
-          </div>
-          <label class="toggle"><input type="checkbox" id="autoSyncToggle" onchange="saveAutoSync()"><span class="toggle-slider"></span></label>
-        </div>
-        <div class="sync-info">
-          <div class="sync-info-title">Sync Behavior</div>
-          <ul class="sync-bullets">
-            <li>New events from Google Calendar are added as "unbooked"</li>
-            <li>Existing events are never overwritten in your custom fields</li>
-            <li>Your pricing, deposits, and notes are always preserved</li>
-            <li>Only reads from Google Calendar (never writes to it)</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="closeModal('settingsModal')">Close</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="calModal">
-  <div class="modal settings-modal">
-    <div class="modal-head">
-      <div>
-        <div class="modal-title">📅 Google Calendar Settings</div>
-        <div class="modal-sub">Connect and sync your Google Calendar to import events automatically</div>
-      </div>
-      <button class="modal-close" onclick="closeModal('calModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="cal-status">
-        <div class="cal-status-left">
-          <div class="cal-status-dot" id="calStatusDot" style="background:var(--red)"></div>
-          <span id="calStatusText">Not Connected</span>
-        </div>
-        <div class="active-badge" id="calActiveBadge">Inactive</div>
-      </div>
-      <div class="form-group">
-        <label>Select Calendar to Show & Sync</label>
-        <select class="form-control" id="calSelect">
-          <option value="">-- Select a calendar --</option>
-        </select>
-      </div>
-      <div class="sync-info">
-        <ul class="sync-bullets">
-          <li>Only the selected calendar's imported events are shown</li>
-          <li>Your manual edits are preserved on re-sync</li>
-          <li>Sync updates only Google-based fields like date, title, location and description</li>
-        </ul>
-      </div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="syncNow()">🔄 Sync Now</button>
-    </div>
     <div class="modal-foot">
       <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="closeModal('calModal')">Close</button>
     </div>
@@ -1461,13 +1453,30 @@ function openPkgManager() {
   renderPkgList();
 }
 function closeModal(id) {
-  document.getElementById(id).classList.remove('active');
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('active');
 }
 
 document.querySelectorAll('.overlay').forEach(o => {
   o.addEventListener('click', function(e) {
     if (e.target === this) this.classList.remove('active');
   });
+});
+
+function toggleUserMenu() {
+  const d = document.getElementById('userDropdown');
+  if (!d) return;
+  d.style.display = d.style.display === 'none' ? '' : 'none';
+}
+function hideUserMenu() {
+  const d = document.getElementById('userDropdown');
+  if (d) d.style.display = 'none';
+}
+document.addEventListener('click', e => {
+  const d = document.getElementById('userDropdown');
+  if (d && !d.contains(e.target) && !e.target.closest('.user-menu-trigger')) {
+    d.style.display = 'none';
+  }
 });
 
 function openAddEvent() {
@@ -1738,6 +1747,7 @@ function signOut() {
   document.getElementById('app').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
   updateCalendarConnectionUI(false);
+  hideUserMenu();
 }
 
 function showToast(msg) {
