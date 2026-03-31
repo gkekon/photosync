@@ -34,12 +34,10 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; transition: background 0.3s, color 0.3s; }
 
-/* SCROLLBAR */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg2); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-/* NAV */
 nav {
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 24px; height: 56px;
@@ -58,10 +56,8 @@ nav {
 .user-menu-trigger { display: flex; align-items: center; gap: 4px; cursor: pointer; position: relative; }
 .chevron { font-size: 10px; color: var(--text2); }
 
-/* MAIN */
 main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
 
-/* STAT CARDS */
 .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
 @media (max-width: 900px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 480px) { .stat-grid { grid-template-columns: 1fr; } }
@@ -72,7 +68,6 @@ main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
 .next-event-name { font-size: 18px; font-weight: 700; }
 .next-event-date { font-size: 12px; color: var(--text2); margin-top: 2px; }
 
-/* PACKAGES BAR */
 .packages-bar { display: flex; align-items: center; gap: 8px; overflow-x: auto; padding: 10px 0; margin-bottom: 14px; flex-wrap: nowrap; }
 .pkg-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg2); font-size: 12px; color: var(--text); white-space: nowrap; cursor: pointer; transition: all 0.15s; }
 .pkg-chip:hover { border-color: var(--accent); }
@@ -80,12 +75,10 @@ main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
 .add-pkg-btn { display: inline-flex; align-items: center; gap: 4px; padding: 5px 12px; border-radius: 20px; border: 1px dashed var(--border); background: transparent; color: var(--text2); font-size: 12px; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
 .add-pkg-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-/* TABS */
 .tabs { display: flex; gap: 4px; margin-bottom: 16px; background: var(--bg3); border-radius: 10px; padding: 4px; width: fit-content; }
 .tab { padding: 7px 18px; border-radius: 7px; border: none; background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px; transition: all 0.15s; }
 .tab.active { background: var(--bg); color: var(--text); border: 1px solid var(--border); box-shadow: var(--shadow); }
 
-/* TABLE PANEL */
 .table-panel { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; }
 .table-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border); }
 .table-title { font-size: 15px; font-weight: 600; }
@@ -113,7 +106,6 @@ td { padding: 10px 12px; font-size: 13px; white-space: nowrap; }
 .check-yes { color: var(--green); }
 .check-no { color: var(--red); }
 
-/* ANALYTICS */
 .analytics-panel { display: none; flex-direction: column; gap: 12px; }
 .analytics-panel.active { display: flex; }
 .analytics-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
@@ -129,7 +121,6 @@ td { padding: 10px 12px; font-size: 13px; white-space: nowrap; }
 .chart-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; }
 .chart-canvas-wrap { flex: 1; position: relative; }
 
-/* MODAL OVERLAY */
 .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 16px; }
 .overlay.active { display: flex; }
 .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.5); animation: modalIn 0.2s ease; }
@@ -161,7 +152,6 @@ textarea.form-control { resize: vertical; min-height: 70px; }
 .modal-foot { display: flex; gap: 10px; padding: 0 20px 20px; }
 .modal-foot .btn { flex: 1; justify-content: center; padding: 10px; }
 
-/* SETTINGS MODAL */
 .settings-modal { max-width: 480px; }
 .settings-section { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
 .theme-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
@@ -174,7 +164,6 @@ textarea.form-control { resize: vertical; min-height: 70px; }
 .sync-info-title { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
 .sync-bullets { list-style: disc; padding-left: 16px; color: var(--text2); font-size: 12px; line-height: 1.8; }
 
-/* DROPDOWN MENU */
 .dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; min-width: 220px; box-shadow: var(--shadow); z-index: 300; overflow: hidden; }
 .dropdown-user { padding: 12px 14px; border-bottom: 1px solid var(--border); }
 .dropdown-user-name { font-size: 13px; font-weight: 600; }
@@ -184,20 +173,17 @@ textarea.form-control { resize: vertical; min-height: 70px; }
 .dropdown-item.danger { color: var(--red); }
 .dropdown-divider { height: 1px; background: var(--border); margin: 4px 0; }
 
-/* GOOGLE CAL MODAL */
 .cal-status { display: flex; align-items: center; justify-content: space-between; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
 .cal-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
 .cal-status-left { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; }
 .active-badge { padding: 2px 10px; border-radius: 12px; font-size: 11px; border: 1px solid var(--border); color: var(--text2); }
 
-/* PKG MANAGER */
 .pkg-list { display: flex; flex-direction: column; gap: 8px; }
 .pkg-row { display: flex; align-items: center; gap: 8px; }
 .pkg-row .form-control { flex: 1; }
 .pkg-delete { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--text2); cursor: pointer; padding: 6px 8px; }
 .pkg-delete:hover { color: var(--red); border-color: var(--red); }
 
-/* LOGIN SCREEN */
 .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; gap: 24px; text-align: center; padding: 24px; }
 .login-logo { width: 64px; height: 64px; background: var(--accent); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto; }
 .login-title { font-size: 28px; font-weight: 700; }
@@ -209,18 +195,15 @@ textarea.form-control { resize: vertical; min-height: 70px; }
 .login-feature { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; text-align: left; font-size: 12px; color: var(--text2); }
 .login-feature strong { display: block; color: var(--text); font-size: 13px; margin-bottom: 2px; }
 
-/* DETAIL MODAL */
 .detail-section { border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 2px; }
 .detail-section:last-child { border-bottom: none; }
 .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .detail-item-label { font-size: 11px; color: var(--text2); margin-bottom: 2px; }
 .detail-item-value { font-size: 13px; font-weight: 500; }
 
-/* CUSTOM BG */
 .custom-color-wrap { display: flex; align-items: center; gap: 10px; }
 .custom-color-wrap input[type=color] { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border); background: none; cursor: pointer; padding: 2px; }
 
-/* RESPONSIVE NAV */
 @media (max-width: 600px) {
   nav { padding: 0 12px; }
   main { padding: 12px; }
@@ -228,22 +211,18 @@ textarea.form-control { resize: vertical; min-height: 70px; }
   .nav-logo span { display: none; }
 }
 
-/* TOAST */
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 10px 20px; font-size: 13px; z-index: 500; transition: transform 0.3s ease; box-shadow: var(--shadow); white-space: nowrap; }
 .toast.show { transform: translateX(-50%) translateY(0); }
 
-/* SPIN */
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { animation: spin 1s linear infinite; display: inline-block; }
 
-/* SORT ARROW */
 .sort-arrow { font-size: 10px; margin-left: 2px; opacity: 0.5; }
 .sort-arrow.active { opacity: 1; color: var(--accent); }
 </style>
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
 <div id="loginScreen" class="login-screen">
   <div class="login-logo">📷</div>
   <div>
@@ -264,10 +243,7 @@ textarea.form-control { resize: vertical; min-height: 70px; }
   </div>
 </div>
 
-<!-- APP -->
 <div id="app" style="display:none;">
-
-<!-- NAV -->
 <nav>
   <div class="nav-logo">
     <div class="logo-icon">📷</div>
@@ -289,7 +265,7 @@ textarea.form-control { resize: vertical; min-height: 70px; }
       <div class="dropdown" id="userDropdown" style="display:none;" onclick="event.stopPropagation()">
         <div class="dropdown-user">
           <div class="dropdown-user-name" id="dropdownName">User</div>
-          <div class="dropdown-user-email" id="dropdownEmail">[email&#160;protected]</div>
+          <div class="dropdown-user-email" id="dropdownEmail">[email protected]</div>
         </div>
         <button class="dropdown-item" onclick="openSettings();toggleUserMenu()">⚙️ Settings</button>
         <button class="dropdown-item" onclick="openCalSettings();toggleUserMenu()">📅 Calendar Settings</button>
@@ -304,7 +280,6 @@ textarea.form-control { resize: vertical; min-height: 70px; }
   </div>
 </nav>
 
-<!-- MAIN -->
 <main>
   <div class="stat-grid">
     <div class="stat-card">
@@ -390,7 +365,6 @@ textarea.form-control { resize: vertical; min-height: 70px; }
 </main>
 </div>
 
-<!-- ADD/EDIT EVENT MODAL -->
 <div class="overlay" id="eventModal">
   <div class="modal">
     <div class="modal-head">
@@ -484,7 +458,6 @@ textarea.form-control { resize: vertical; min-height: 70px; }
   </div>
 </div>
 
-<!-- SETTINGS MODAL -->
 <div class="overlay" id="settingsModal">
   <div class="modal settings-modal">
     <div class="modal-head">
@@ -549,7 +522,7 @@ textarea.form-control { resize: vertical; min-height: 70px; }
           <div class="sync-info-title">Sync Behavior</div>
           <ul class="sync-bullets">
             <li>New events from Google Calendar are added as "unbooked"</li>
-            <li>Existing events are never overwritten</li>
+            <li>Existing events are never overwritten in your custom fields</li>
             <li>Your pricing, deposits, and notes are always preserved</li>
             <li>Only reads from Google Calendar (never writes to it)</li>
           </ul>
@@ -562,7 +535,6 @@ textarea.form-control { resize: vertical; min-height: 70px; }
   </div>
 </div>
 
-<!-- CALENDAR SETTINGS MODAL -->
 <div class="overlay" id="calModal">
   <div class="modal settings-modal">
     <div class="modal-head">
@@ -581,16 +553,16 @@ textarea.form-control { resize: vertical; min-height: 70px; }
         <div class="active-badge" id="calActiveBadge">Inactive</div>
       </div>
       <div class="form-group">
-        <label>Select Calendar to Sync</label>
+        <label>Select Calendar to Show & Sync</label>
         <select class="form-control" id="calSelect">
           <option value="">-- Select a calendar --</option>
         </select>
       </div>
       <div class="sync-info">
         <ul class="sync-bullets">
-          <li>Syncing imports events from the past year and next year</li>
-          <li>New events are added as "unbooked" status</li>
-          <li>Existing events won't be overwritten</li>
+          <li>Only the selected calendar's imported events are shown</li>
+          <li>Your manual edits are preserved on re-sync</li>
+          <li>Sync updates only Google-based fields like date, title, location and description</li>
         </ul>
       </div>
       <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="syncNow()">🔄 Sync Now</button>
@@ -601,7 +573,6 @@ textarea.form-control { resize: vertical; min-height: 70px; }
   </div>
 </div>
 
-<!-- PACKAGE MANAGER MODAL -->
 <div class="overlay" id="pkgModal">
   <div class="modal settings-modal">
     <div class="modal-head">
@@ -622,7 +593,6 @@ textarea.form-control { resize: vertical; min-height: 70px; }
   </div>
 </div>
 
-<!-- DETAIL MODAL -->
 <div class="overlay" id="detailModal">
   <div class="modal">
     <div class="modal-head">
@@ -641,12 +611,9 @@ textarea.form-control { resize: vertical; min-height: 70px; }
   </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
 <script>
-// ===== STATE =====
 let state = {
   user: null,
   events: [],
@@ -669,7 +636,6 @@ let state = {
   chart: null,
 };
 
-// ===== STORAGE =====
 function save() {
   localStorage.setItem('ps_events', JSON.stringify(state.events));
   localStorage.setItem('ps_packages', JSON.stringify(state.packages));
@@ -687,7 +653,6 @@ function load() {
   try { state.user = JSON.parse(localStorage.getItem('ps_user')); } catch(e){}
 }
 
-// ===== GOOGLE AUTH =====
 const CLIENT_ID = '229545255239-rha9kn9rkf0l6c5uioo4rbg4n8aig2eq.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly profile email';
 
@@ -696,7 +661,6 @@ function signIn() {
     demoMode();
     return;
   }
-
   const redirectUri = location.origin + location.pathname;
   const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(SCOPES)}&prompt=consent&include_granted_scopes=true`;
   location.href = url;
@@ -704,11 +668,9 @@ function signIn() {
 
 function handleOAuthCallback() {
   const hash = location.hash;
-
   if (hash && hash.includes('access_token')) {
     const params = new URLSearchParams(hash.slice(1));
     const token = params.get('access_token');
-
     if (token) {
       state.googleToken = token;
       localStorage.setItem('ps_gtoken', token);
@@ -716,36 +678,27 @@ function handleOAuthCallback() {
       return true;
     }
   }
-
   const stored = localStorage.getItem('ps_gtoken');
   if (stored) {
     state.googleToken = stored;
     return 'stored';
   }
-
   return false;
 }
 
 async function fetchGoogleProfile() {
   if (!state.googleToken) return false;
-
   const r = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
     headers: { Authorization: `Bearer ${state.googleToken}` }
   });
-
-  if (!r.ok) {
-    throw new Error('Failed to fetch Google profile');
-  }
-
+  if (!r.ok) throw new Error('Failed to fetch Google profile');
   const d = await r.json();
-
   state.user = {
     name: d.name || 'Google User',
     email: d.email || '',
     picture: d.picture || '',
     initial: (d.name?.[0] || 'U').toUpperCase()
   };
-
   save();
   return true;
 }
@@ -791,7 +744,6 @@ async function fetchCalendars() {
         showToast('Google session expired. Please sign in again.');
         return [];
       }
-
       const errText = await r.text();
       throw new Error(`Calendar fetch failed (${r.status}) ${errText}`);
     }
@@ -811,7 +763,9 @@ async function fetchCalendars() {
         sel.appendChild(o);
       });
 
-      if (!state.selectedCalendar && state.calendars.length) {
+      if (state.selectedCalendar && state.calendars.some(c => c.id === state.selectedCalendar)) {
+        sel.value = state.selectedCalendar;
+      } else if (state.calendars.length) {
         const primary = state.calendars.find(c => c.primary) || state.calendars[0];
         state.selectedCalendar = primary.id;
         sel.value = primary.id;
@@ -831,24 +785,27 @@ async function fetchCalendars() {
 
 async function fetchCalendarEvents(calId) {
   if (!state.googleToken || !calId) return [];
-
   const now = new Date();
   const min = new Date(now.getFullYear() - 1, 0, 1).toISOString();
   const max = new Date(now.getFullYear() + 1, 11, 31).toISOString();
-
   const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calId)}/events?timeMin=${min}&timeMax=${max}&singleEvents=true&orderBy=startTime&maxResults=2500`;
-
   const r = await fetch(url, {
     headers: { Authorization: `Bearer ${state.googleToken}` }
   });
-
   if (!r.ok) {
     const errText = await r.text();
     throw new Error(`Events fetch failed (${r.status}) ${errText}`);
   }
-
   const d = await r.json();
   return d.items || [];
+}
+
+function getVisibleEvents() {
+  return state.events.filter(e => {
+    if (!e.importedFromGoogle) return true;
+    if (!state.selectedCalendar) return false;
+    return e.sourceCalendarId === state.selectedCalendar;
+  });
 }
 
 async function syncCalendar() {
@@ -861,7 +818,7 @@ async function syncCalendar() {
 
   try {
     if (!state.googleToken) {
-      showToast('Not connected to Google. Please sign in first.');
+      showToast('Δεν υπάρχει σύνδεση με Google.');
       return;
     }
 
@@ -873,51 +830,65 @@ async function syncCalendar() {
     const calId = (calSelect?.value || state.selectedCalendar || '').trim();
 
     if (!calId) {
-      showToast('Please select a calendar first.');
+      showToast('Επίλεξε πρώτα ημερολόγιο.');
       openCalSettings();
       return;
     }
 
     state.selectedCalendar = calId;
-    save();
 
     const items = await fetchCalendarEvents(calId);
     let added = 0;
+    let updated = 0;
 
     items.forEach(ev => {
-      if (state.events.find(e => e.calId === ev.id)) return;
-
+      const googleEventId = ev.id;
       const dateStr = ev.start?.date || ev.start?.dateTime?.slice(0, 10) || '';
 
-      state.events.push({
-        id: Date.now() + Math.random(),
-        calId: ev.id,
-        date: dateStr,
-        name: ev.summary || 'Untitled',
-        location: ev.location || '',
-        info: ev.description || '',
-        status: 'Unbooked',
-        package: '',
-        video: false,
-        photoPrice: 0,
-        videoPrice: 0,
-        offerPrice: 0,
-        costs: 0,
-        clearIncome: 0,
-        deposit: false,
-        depositAmount: 0,
-        offers: '',
-      });
+      const existing = state.events.find(e =>
+        e.importedFromGoogle === true &&
+        e.sourceCalendarId === calId &&
+        e.calId === googleEventId
+      );
 
-      added++;
+      if (existing) {
+        existing.date = dateStr;
+        existing.name = ev.summary || existing.name || 'Untitled';
+        existing.location = ev.location || existing.location || '';
+        existing.info = ev.description || existing.info || '';
+        updated++;
+      } else {
+        state.events.push({
+          id: Date.now() + Math.random(),
+          calId: googleEventId,
+          date: dateStr,
+          name: ev.summary || 'Untitled',
+          location: ev.location || '',
+          info: ev.description || '',
+          status: 'Unbooked',
+          package: '',
+          video: false,
+          photoPrice: 0,
+          videoPrice: 0,
+          offerPrice: 0,
+          costs: 0,
+          clearIncome: 0,
+          deposit: false,
+          depositAmount: 0,
+          offers: '',
+          importedFromGoogle: true,
+          sourceCalendarId: calId,
+        });
+        added++;
+      }
     });
 
     save();
     renderAll();
-    showToast(`✅ Synced! ${added} new event(s) added.`);
+    showToast(`✅ Sync ολοκληρώθηκε. Νέα: ${added}, ενημερωμένα: ${updated}`);
   } catch (e) {
     console.error('syncCalendar error:', e);
-    showToast('Sync error: ' + e.message);
+    showToast('Σφάλμα sync: ' + e.message);
   } finally {
     icon.className = '';
     btn.disabled = false;
@@ -929,7 +900,6 @@ async function syncNow() {
   await syncCalendar();
 }
 
-// ===== DEMO MODE =====
 function demoMode() {
   state.user = { name: 'Konstantinos Gkekopoulos', email: 'gkekon@gmail.com', initial: 'K' };
   state.googleToken = null;
@@ -938,24 +908,8 @@ function demoMode() {
 
   if (state.events.length === 0) {
     state.events = [
-      { id:1, calId:'demo1', date:'2026-01-17', name:'Γάμος Ροδούλα & Αντώνης', location:'', info:'', status:'Completed', package:'Silver Photography Package', video:true, photoPrice:950, videoPrice:0, offerPrice:1200, costs:250, clearIncome:950, deposit:true, depositAmount:300, offers:'' },
-      { id:2, calId:'demo2', date:'2026-05-09', name:'Xristina Moutsi Gamobaptisi', location:'', info:'', status:'Booked', package:'', video:true, photoPrice:1000, videoPrice:0, offerPrice:1300, costs:300, clearIncome:1000, deposit:true, depositAmount:200, offers:'' },
-      { id:3, calId:'demo3', date:'2026-05-23', name:'Eleni wedding Arolithos', location:'', info:'', status:'Booked', package:'', video:true, photoPrice:1000, videoPrice:0, offerPrice:1600, costs:600, clearIncome:1000, deposit:true, depositAmount:300, offers:'' },
-      { id:4, calId:'demo4', date:'2026-06-07', name:'Photoshoot - Mobolaji Ajose-Adeogun', location:'', info:'', status:'Booked', package:'', video:false, photoPrice:150, videoPrice:0, offerPrice:150, costs:0, clearIncome:150, deposit:true, depositAmount:0, offers:'' },
-      { id:5, calId:'demo5', date:'2026-06-27', name:'Gianna Kontaxaki', location:'', info:'', status:'Booked', package:'', video:false, photoPrice:150, videoPrice:0, offerPrice:150, costs:0, clearIncome:150, deposit:false, depositAmount:0, offers:'' },
-      { id:6, calId:'demo6', date:'2026-07-09', name:'Wedding Alex and Franci Palaikastro!', location:'', info:'', status:'Booked', package:'Silver Photography Package', video:true, photoPrice:1200, videoPrice:0, offerPrice:2500, costs:1300, clearIncome:1200, deposit:false, depositAmount:0, offers:'' },
-      { id:7, calId:'demo7', date:'2026-07-12', name:'Εμμανουέλα Βάπτιση Καλό χωριό', location:'', info:'', status:'Booked', package:'', video:false, photoPrice:300, videoPrice:0, offerPrice:350, costs:50, clearIncome:300, deposit:false, depositAmount:0, offers:'' },
-      { id:8, calId:'demo8', date:'2026-07-23', name:'Alexandra Wedding!!!', location:'', info:'', status:'Booked', package:'Silver Photography Package', video:false, photoPrice:1400, videoPrice:0, offerPrice:1450, costs:50, clearIncome:1400, deposit:true, depositAmount:400, offers:'' },
-      { id:9, calId:'demo9', date:'2026-07-26', name:'Δώρα Μανιώτη γαμοβάπτιση', location:'', info:'', status:'Booked', package:'Wedding Photo & Video Gold 2 & 2', video:true, photoPrice:1400, videoPrice:0, offerPrice:2400, costs:1000, clearIncome:1400, deposit:true, depositAmount:400, offers:'' },
-      { id:10, calId:'demo10', date:'2026-08-22', name:'baptish keratokampos Marinos Fakis', location:'', info:'', status:'Booked', package:'', video:true, photoPrice:950, videoPrice:0, offerPrice:950, costs:0, clearIncome:950, deposit:true, depositAmount:200, offers:'' },
-      { id:11, calId:'demo11', date:'2026-09-05', name:'Konstantinos Sokopoulos Wedding', location:'', info:'', status:'Booked', package:'Gold Photography Package', video:true, photoPrice:1200, videoPrice:0, offerPrice:2450, costs:1250, clearIncome:1200, deposit:true, depositAmount:300, offers:'' },
-      { id:12, calId:'demo12', date:'2026-09-12', name:'Nadya', location:'', info:'', status:'Unbooked', package:'', video:true, photoPrice:0, videoPrice:0, offerPrice:0, costs:0, clearIncome:0, deposit:false, depositAmount:0, offers:'' },
-      { id:13, calId:'demo13', date:'2026-09-18', name:'Στέλιος Χαλασοφουρνάκης Γάμος', location:'', info:'', status:'Booked', package:'', video:true, photoPrice:850, videoPrice:0, offerPrice:1100, costs:250, clearIncome:850, deposit:false, depositAmount:0, offers:'' },
-      { id:14, calId:'demo14', date:'2026-09-27', name:'Kostas Fragiadakis Wedding Aristote...', location:'Ηράκλειο', info:'', status:'Booked', package:'', video:true, photoPrice:800, videoPrice:0, offerPrice:800, costs:0, clearIncome:800, deposit:false, depositAmount:0, offers:'' },
-      { id:15, calId:'demo15', date:'2026-09-29', name:'Νίκος Αστυρακακης', location:'', info:'', status:'Booked', package:'Wedding Photo & Video Gold 2 & 2', video:true, photoPrice:1050, videoPrice:0, offerPrice:2400, costs:1350, clearIncome:1050, deposit:true, depositAmount:300, offers:'' },
-      { id:16, calId:'demo16', date:'2026-10-04', name:'βαπτιση Στέλλα', location:'', info:'', status:'Booked', package:'', video:true, photoPrice:350, videoPrice:0, offerPrice:350, costs:0, clearIncome:350, deposit:false, depositAmount:0, offers:'' },
-      { id:17, calId:'demo17', date:'2026-11-08', name:'Anna Zouka', location:'', info:'', status:'Booked', package:'Wedding Photo & Video Gold 2 & 2', video:true, photoPrice:1300, videoPrice:0, offerPrice:2500, costs:1200, clearIncome:1300, deposit:true, depositAmount:400, offers:'' },
-      { id:18, calId:'demo18', date:'2026-08-14', name:'Madeleine Wedding', location:'AgrecoFarms, Αδελε 741 50', info:'', status:'Booked', package:'Silver Photography Package', video:false, photoPrice:900, videoPrice:0, offerPrice:900, costs:0, clearIncome:900, deposit:false, depositAmount:0, offers:'' },
+      { id:1, calId:'demo1', date:'2026-01-17', name:'Γάμος Ροδούλα & Αντώνης', location:'', info:'', status:'Completed', package:'Silver Photography Package', video:true, photoPrice:950, videoPrice:0, offerPrice:1200, costs:250, clearIncome:950, deposit:true, depositAmount:300, offers:'', importedFromGoogle:false },
+      { id:2, calId:'demo2', date:'2026-05-09', name:'Xristina Moutsi Gamobaptisi', location:'', info:'', status:'Booked', package:'', video:true, photoPrice:1000, videoPrice:0, offerPrice:1300, costs:300, clearIncome:1000, deposit:true, depositAmount:200, offers:'', importedFromGoogle:false }
     ];
   }
 
@@ -963,7 +917,6 @@ function demoMode() {
   showApp();
 }
 
-// ===== SHOW APP =====
 function showApp() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
@@ -995,7 +948,6 @@ function showApp() {
   }
 }
 
-// ===== THEME =====
 function setTheme(t) {
   state.theme = t;
   applyTheme(t);
@@ -1034,7 +986,6 @@ function clearCustomBg() {
   document.documentElement.style.removeProperty('--bg');
 }
 
-// ===== RENDER =====
 function renderAll() {
   renderStats();
   renderTable();
@@ -1046,9 +997,10 @@ function fmt(n) {
 }
 
 function renderStats() {
+  const visibleEvents = getVisibleEvents();
   const year = new Date().getFullYear();
   const month = new Date().getMonth();
-  const bookedEvents = state.events.filter(e => e.status !== 'Unbooked');
+  const bookedEvents = visibleEvents.filter(e => e.status !== 'Unbooked');
   const yearlyIncome = bookedEvents
     .filter(e => new Date(e.date).getFullYear() === year)
     .reduce((s, e) => s + (e.clearIncome || 0), 0);
@@ -1060,9 +1012,9 @@ function renderStats() {
     })
     .reduce((s, e) => s + (e.clearIncome || 0), 0);
 
-  const pendingDeposits = state.events.filter(e => !e.deposit && e.status !== 'Unbooked').length;
+  const pendingDeposits = visibleEvents.filter(e => !e.deposit && e.status !== 'Unbooked').length;
   const today = new Date().toISOString().slice(0, 10);
-  const upcoming = state.events
+  const upcoming = visibleEvents
     .filter(e => e.date >= today && e.status !== 'Completed')
     .sort((a, b) => a.date.localeCompare(b.date));
 
@@ -1118,20 +1070,19 @@ function sortTable(col) {
 
 function renderTable() {
   const tbody = document.getElementById('eventsBody');
+  const visibleEvents = getVisibleEvents();
 
-  const sorted = [...state.events].sort((a, b) => {
+  const sorted = [...visibleEvents].sort((a, b) => {
     let va = a[sortCol] ?? '';
     let vb = b[sortCol] ?? '';
-
     if (typeof va === 'number' && typeof vb === 'number') {
       return (va - vb) * sortDir;
     }
-
     return String(va).localeCompare(String(vb)) * sortDir;
   });
 
-  const total = state.events.length;
-  const unbooked = state.events.filter(e => e.status === 'Unbooked').length;
+  const total = visibleEvents.length;
+  const unbooked = visibleEvents.filter(e => e.status === 'Unbooked').length;
 
   document.getElementById('totalBadge').textContent = total + ' event' + (total !== 1 ? 's' : '');
   const ub = document.getElementById('unbookedBadge');
@@ -1163,9 +1114,9 @@ function renderTable() {
   });
 }
 
-// ===== ANALYTICS =====
 function renderAnalytics() {
-  const booked = state.events.filter(e => e.status !== 'Unbooked');
+  const visibleEvents = getVisibleEvents();
+  const booked = visibleEvents.filter(e => e.status !== 'Unbooked');
   const totalRev = booked.reduce((s, e) => s + (e.clearIncome || 0), 0);
   const totalCosts = booked.reduce((s, e) => s + (e.costs || 0), 0);
   const margin = totalRev > 0 ? ((totalRev / (totalRev + totalCosts)) * 100).toFixed(1) : 0;
@@ -1202,7 +1153,7 @@ function renderChart() {
     const incomeByMonth = Array(12).fill(0);
     const countByMonth = Array(12).fill(0);
 
-    state.events
+    getVisibleEvents()
       .filter(e => e.status !== 'Unbooked' && new Date(e.date).getFullYear() === year)
       .forEach(e => {
         const m = new Date(e.date).getMonth();
@@ -1231,10 +1182,10 @@ function renderChart() {
     });
   } else if (state.currentChart === 'status') {
     document.getElementById('chartTitle').textContent = 'Event Status Breakdown';
-
-    const booked = state.events.filter(e => e.status === 'Booked').length;
-    const completed = state.events.filter(e => e.status === 'Completed').length;
-    const unbooked = state.events.filter(e => e.status === 'Unbooked').length;
+    const visibleEvents = getVisibleEvents();
+    const booked = visibleEvents.filter(e => e.status === 'Booked').length;
+    const completed = visibleEvents.filter(e => e.status === 'Completed').length;
+    const unbooked = visibleEvents.filter(e => e.status === 'Unbooked').length;
 
     state.chart = new Chart(canvas, {
       type: 'doughnut',
@@ -1257,7 +1208,7 @@ function renderChart() {
     document.getElementById('chartTitle').textContent = 'Revenue by Package';
 
     const pkgMap = {};
-    state.events.filter(e => e.status !== 'Unbooked').forEach(e => {
+    getVisibleEvents().filter(e => e.status !== 'Unbooked').forEach(e => {
       const k = e.package || 'No Package';
       pkgMap[k] = (pkgMap[k] || 0) + (e.clearIncome || 0);
     });
@@ -1282,19 +1233,15 @@ function renderChart() {
   }
 }
 
-// ===== TABS =====
 function switchTab(t) {
   state.currentTab = t;
   document.getElementById('eventsPanel').style.display = t === 'events' ? '' : 'none';
-
   const ap = document.getElementById('analyticsPanel');
   ap.style.display = t === 'analytics' ? 'flex' : 'none';
-
   if (t === 'analytics') {
     ap.classList.add('active');
     renderAnalytics();
   }
-
   document.getElementById('tabEvents').classList.toggle('active', t === 'events');
   document.getElementById('tabAnalytics').classList.toggle('active', t === 'analytics');
 }
@@ -1314,7 +1261,6 @@ function switchSettingsTab(t) {
   document.getElementById('stSync').classList.toggle('active', t === 'sync');
 }
 
-// ===== MODALS =====
 function openSettings() {
   document.getElementById('settingsModal').classList.add('active');
   updateThemeUI();
@@ -1337,7 +1283,6 @@ document.querySelectorAll('.overlay').forEach(o => {
   });
 });
 
-// ===== ADD/EDIT EVENT =====
 function openAddEvent() {
   state.currentEventId = null;
   document.getElementById('modalTitle').textContent = 'New Event';
@@ -1366,7 +1311,6 @@ function openAddEvent() {
 function openEditEvent(id) {
   const ev = state.events.find(e => e.id === id);
   if (!ev) return;
-
   state.currentEventId = id;
   document.getElementById('modalTitle').textContent = 'Edit Event';
   document.getElementById('modalSub').textContent = 'Update booking details';
@@ -1394,7 +1338,6 @@ function openEditEvent(id) {
 function populatePackageSelect(selected) {
   const sel = document.getElementById('fPackage');
   sel.innerHTML = '<option value="">No package</option>';
-
   state.packages.forEach(p => {
     const o = document.createElement('option');
     o.value = p.name;
@@ -1407,7 +1350,6 @@ function populatePackageSelect(selected) {
 function onPackageChange() {
   const name = document.getElementById('fPackage').value;
   const pkg = state.packages.find(p => p.name === name);
-
   if (pkg && pkg.price > 0) {
     document.getElementById('fOfferPrice').value = pkg.price;
     calcIncome();
@@ -1423,6 +1365,10 @@ function calcIncome() {
 
 function saveEvent() {
   const id = state.currentEventId;
+
+  const existing = id ? state.events.find(e => e.id === id) : null;
+  const importedFromGoogle = existing?.importedFromGoogle === true;
+  const sourceCalendarId = existing?.sourceCalendarId || '';
 
   const ev = {
     id: id || (Date.now() + Math.random()),
@@ -1442,6 +1388,8 @@ function saveEvent() {
     deposit: document.getElementById('fDeposit').checked,
     depositAmount: parseFloat(document.getElementById('fDepositAmount').value) || 0,
     offers: document.getElementById('fOffers').value,
+    importedFromGoogle,
+    sourceCalendarId
   };
 
   if (id) {
@@ -1457,12 +1405,10 @@ function saveEvent() {
   showToast(id ? '✅ Event updated.' : '✅ Event created.');
 }
 
-// ===== DETAIL =====
 let detailEventId = null;
 function openDetail(id) {
   const ev = state.events.find(e => e.id === id);
   if (!ev) return;
-
   detailEventId = id;
   document.getElementById('detailTitle').textContent = ev.name;
   document.getElementById('detailDate').textContent = ev.date;
@@ -1489,6 +1435,7 @@ function openDetail(id) {
     ${ev.offers ? `<div class="detail-section"><div class="detail-item-label">Attached Offers</div><div class="detail-item-value" style="margin-top:4px;">${escapeHtml(ev.offers)}</div></div>` : ''}
     ${ev.info ? `<div class="detail-section"><div class="detail-item-label">Additional Info</div><div class="detail-item-value" style="margin-top:4px;">${escapeHtml(ev.info)}</div></div>` : ''}
     ${ev.calId ? `<div style="margin-top:4px;"><div class="detail-item-label">Google Calendar ID</div><div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);margin-top:2px;">${escapeHtml(ev.calId)}</div></div>` : ''}
+    ${ev.importedFromGoogle ? `<div style="margin-top:8px;"><div class="detail-item-label">Source Calendar</div><div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);margin-top:2px;">${escapeHtml(ev.sourceCalendarId || '')}</div></div>` : ''}
   `;
   document.getElementById('detailModal').classList.add('active');
 }
@@ -1507,7 +1454,6 @@ function deleteFromDetail() {
   showToast('🗑 Event deleted.');
 }
 
-// ===== PACKAGES =====
 function renderPkgList() {
   const list = document.getElementById('pkgList');
   list.innerHTML = '';
@@ -1536,20 +1482,17 @@ function savePackages() {
     name: document.getElementById('pname' + i).value,
     price: parseFloat(document.getElementById('pprice' + i).value) || 0,
   }));
-
   save();
   renderPackagesBar();
   closeModal('pkgModal');
   showToast('📦 Packages saved.');
 }
 
-// ===== AUTO SYNC =====
 function saveAutoSync() {
   state.autoSync = document.getElementById('autoSyncToggle').checked;
   save();
 }
 
-// ===== USER MENU =====
 function toggleUserMenu() {
   const d = document.getElementById('userDropdown');
   d.style.display = d.style.display === 'none' ? '' : 'none';
@@ -1561,20 +1504,19 @@ document.addEventListener('click', e => {
   }
 });
 
-// ===== CALENDAR SELECT PERSIST =====
 document.addEventListener('change', e => {
   if (e.target && e.target.id === 'calSelect') {
     state.selectedCalendar = e.target.value || '';
     save();
+    renderAll();
   }
 });
 
-// ===== EXPORT =====
 function exportCSV(type) {
   let csv, filename;
 
   if (type === 'events') {
-    const headers = ['Date','Name','Status','Video','Package','Location','Photo Price','Video Price','Offer Price','Costs','Clear Income','Deposit','Deposit Amount','Offers','Info','Calendar ID'];
+    const headers = ['Date','Name','Status','Video','Package','Location','Photo Price','Video Price','Offer Price','Costs','Clear Income','Deposit','Deposit Amount','Offers','Info','Calendar ID','Imported From Google','Source Calendar'];
     const rows = state.events.map(e => [
       e.date,
       `"${String(e.name || '').replace(/"/g, '""')}"`,
@@ -1591,15 +1533,18 @@ function exportCSV(type) {
       e.depositAmount,
       `"${String(e.offers || '').replace(/"/g, '""')}"`,
       `"${String(e.info || '').replace(/"/g, '""')}"`,
-      `"${String(e.calId || '').replace(/"/g, '""')}"`
+      `"${String(e.calId || '').replace(/"/g, '""')}"`,
+      e.importedFromGoogle ? 'Yes' : 'No',
+      `"${String(e.sourceCalendarId || '').replace(/"/g, '""')}"`
     ]);
     csv = [headers, ...rows].map(r => r.join(',')).join('\n');
     filename = 'photosync-events.csv';
   } else {
     const year = new Date().getFullYear();
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const visibleEvents = getVisibleEvents();
     const rows = months.map((m, i) => {
-      const evs = state.events.filter(e => {
+      const evs = visibleEvents.filter(e => {
         const d = new Date(e.date);
         return d.getFullYear() === year && d.getMonth() === i && e.status !== 'Unbooked';
       });
@@ -1616,23 +1561,19 @@ function exportCSV(type) {
   a.click();
 }
 
-// ===== SIGN OUT =====
 function signOut() {
   state.user = null;
   state.googleToken = null;
   state.calendars = [];
   state.selectedCalendar = '';
-
   localStorage.removeItem('ps_user');
   localStorage.removeItem('ps_gtoken');
   localStorage.removeItem('ps_selCal');
-
   document.getElementById('app').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
   updateCalendarConnectionUI(false);
 }
 
-// ===== TOAST =====
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -1641,7 +1582,6 @@ function showToast(msg) {
   t._to = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ===== HELPERS =====
 function escapeHtml(str) {
   return String(str)
     .replaceAll('&', '&amp;')
@@ -1654,7 +1594,6 @@ function escapeAttr(str) {
   return escapeHtml(str);
 }
 
-// ===== INIT =====
 async function initApp() {
   load();
 
@@ -1673,7 +1612,6 @@ async function initApp() {
 
     if (state.user) {
       showApp();
-
       const storedToken = localStorage.getItem('ps_gtoken');
       if (storedToken) {
         state.googleToken = storedToken;
@@ -1688,7 +1626,6 @@ async function initApp() {
       } else {
         updateCalendarConnectionUI(false);
       }
-
       return;
     }
 
