@@ -623,7 +623,7 @@ textarea.form-control { resize: vertical; min-height: 70px; }
           <li>Θα εμφανίζονται μόνο τα επιλεγμένα Google calendars</li>
           <li>Τα edits σου παραμένουν ανέπαφα</li>
           <li>Το sync ενημερώνει μόνο date / title / location / description από Google</li>
-          <li>Τα παλιά imported events θα δεθούν με calendar όταν ταιριάζει το Google Calendar ID</li>
+          <li>Τα παλιά imported events θα δεθούν με calendar όταν ταιριάζει το Google Calendar ID ή το ίδιο date/name</li>
         </ul>
       </div>
 
@@ -913,10 +913,20 @@ async function syncCalendar() {
       items.forEach(ev => {
         const googleEventId = ev.id;
         const dateStr = ev.start?.date || ev.start?.dateTime?.slice(0, 10) || '';
+        const normalizedGoogleName = (ev.summary || 'Untitled').trim().toLowerCase();
 
-        const existing = state.events.find(e => e.calId === googleEventId);
+        const existing = state.events.find(e => {
+          if (e.calId && e.calId === googleEventId) return true;
+
+          const sameDate = (e.date || '') === dateStr;
+          const sameName = (e.name || '').trim().toLowerCase() === normalizedGoogleName;
+          const sameCalendar = (e.sourceCalendarId || '') === calId;
+
+          return sameDate && sameName && sameCalendar;
+        });
 
         if (existing) {
+          existing.calId = googleEventId;
           existing.date = dateStr;
           existing.name = ev.summary || existing.name || 'Untitled';
           existing.location = ev.location || existing.location || '';
